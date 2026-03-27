@@ -1,0 +1,89 @@
+{
+  "tools": [
+    {
+      "id": "decl-field-inspector",
+      "title": "項目一覧 (宣言的)",
+      "description": "オブジェクトの項目API名・型・属性をJSON定義で表示",
+      "category": "viewer",
+      "pageMatch": ["recordPage", "objectHome"],
+      "objectMatch": ["*"],
+      "inputs": [],
+      "dataSources": ["describe"],
+      "operations": [
+        {
+          "type": "describe",
+          "stepId": "desc"
+        }
+      ],
+      "output": {
+        "type": "table",
+        "mapping": {
+          "type": "table",
+          "sourceStepId": "desc",
+          "rowsPath": "fields",
+          "columns": [
+            { "key": "label", "label": "ラベル", "value": "{{row.label}}", "sortable": true },
+            { "key": "apiName", "label": "API名", "value": "{{row.name}}", "sortable": true },
+            { "key": "type", "label": "型", "value": "{{row.type}}", "sortable": true },
+            { "key": "updateable", "label": "編集可", "value": "{{row.updateable | yesNo}}", "sortable": true },
+            { "key": "createable", "label": "作成可", "value": "{{row.createable | yesNo}}", "sortable": true }
+          ]
+        }
+      },
+      "safety": {
+        "level": "readOnly",
+        "allowInProd": true,
+        "requireConfirm": false,
+        "maxAffectedRecords": 0,
+        "dryRunSupported": false
+      },
+      "projectTags": ["default"],
+      "enabled": true
+    },
+    {
+      "id": "decl-record-summary",
+      "title": "レコード概要 (宣言的)",
+      "description": "現在レコードの基本情報をJSON定義で表示",
+      "category": "viewer",
+      "pageMatch": ["recordPage"],
+      "objectMatch": ["*"],
+      "inputs": [],
+      "dataSources": ["soql"],
+      "operations": [
+        {
+          "type": "query",
+          "stepId": "record",
+          "soql": "SELECT Id, Name, CreatedDate, LastModifiedDate FROM {{context.objectApiName}} WHERE Id = '{{context.recordId}}'"
+        }
+      ],
+      "output": {
+        "type": "card",
+        "mapping": {
+          "type": "card",
+          "title": "{{steps.record.records.0.Name | default:レコード概要}}",
+          "sections": [
+            {
+              "heading": "基本情報",
+              "sourceStepId": "record",
+              "items": [
+                { "label": "ID", "value": "{{steps.record.records.0.Id}}" },
+                { "label": "Name", "value": "{{steps.record.records.0.Name | default:(なし)}}" },
+                { "label": "作成日", "value": "{{steps.record.records.0.CreatedDate | formatDate}}" },
+                { "label": "更新日", "value": "{{steps.record.records.0.LastModifiedDate | formatDate}}" }
+              ]
+            }
+          ]
+        }
+      },
+      "safety": {
+        "level": "readOnly",
+        "allowInProd": true,
+        "requireConfirm": false,
+        "maxAffectedRecords": 0,
+        "dryRunSupported": false
+      },
+      "projectTags": ["default"],
+      "enabled": true
+    }
+  ]
+}

@@ -1,0 +1,75 @@
+{
+  "guides": [
+    {
+      "id": "contact-student-record",
+      "pageMatch": ["recordPage"],
+      "objectMatch": ["Contact"],
+      "recordTypeMatch": ["Student"],
+      "title": "生徒レコード確認ポイント",
+      "sections": [
+        {
+          "heading": "基本確認",
+          "items": [
+            "生徒氏名（漢字・カナ）が正しく入力されているか",
+            "保護者との紐付け（世帯アカウント）が設定されているか",
+            "在籍学年が現在の学年と一致しているか"
+          ]
+        },
+        {
+          "heading": "請求関連",
+          "items": [
+            "月謝の請求先が正しい保護者になっているか",
+            "コース・科目の登録が漏れていないか",
+            "割引設定がある場合、適用条件を確認"
+          ]
+        },
+        {
+          "heading": "注意事項",
+          "items": [
+            "個人情報の取扱いに注意（画面共有時はマスク表示推奨）",
+            "退塾処理は専用フローから実行すること（直接ステータス変更不可）"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "bill-item-record",
+      "pageMatch": ["recordPage"],
+      "objectMatch": ["MANAERP__Bill_Item__c"],
+      "title": "請求明細確認ポイント",
+      "sections": [
+        {
+          "heading": "金額確認",
+          "items": [
+            "税込/税抜の区分が正しいか",
+            "割引適用後の金額が想定通りか",
+            "消費税率が正しく設定されているか"
+          ]
+        },
+        {
+          "heading": "ステータス確認",
+          "items": [
+            "請求ステータスが正しいか（下書き/確定/送付済/入金済）",
+            "入金確認フラグとの整合性"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "contact-list-view",
+      "pageMatch": ["objectHome"],
+      "objectMatch": ["Contact"],
+      "title": "連絡先一覧 操作ガイド",
+      "sections": [
+        {
+          "heading": "リストビューの使い方",
+          "items": [
+            "「生徒一覧」ビューで在籍生徒を確認できます",
+            "「見込み生徒」ビューで体験申込者を確認できます",
+            "フィルタで校舎別に絞り込み可能です"
+          ]
+        }
+      ]
+    }
+  ]
+}

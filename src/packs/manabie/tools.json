@@ -1,0 +1,43 @@
+{
+  "tools": [
+    {
+      "id": "manabie-student-fields",
+      "title": "生徒項目一覧",
+      "description": "MANAERP__Student__c の項目API名・型を表示",
+      "category": "viewer",
+      "pageMatch": ["recordPage", "objectHome"],
+      "objectMatch": ["MANAERP__Student__c"],
+      "inputs": [],
+      "dataSources": ["describe"],
+      "operations": [
+        {
+          "type": "describe",
+          "stepId": "desc"
+        }
+      ],
+      "output": {
+        "type": "table",
+        "mapping": {
+          "type": "table",
+          "sourceStepId": "desc",
+          "rowsPath": "fields",
+          "columns": [
+            { "key": "label", "label": "ラベル", "value": "{{row.label}}", "sortable": true },
+            { "key": "apiName", "label": "API名", "value": "{{row.name}}", "sortable": true },
+            { "key": "type", "label": "型", "value": "{{row.type}}", "sortable": true },
+            { "key": "required", "label": "必須", "value": "{{row.nillable | negate | yesNo}}", "sortable": true }
+          ]
+        }
+      },
+      "safety": {
+        "level": "readOnly",
+        "allowInProd": true,
+        "requireConfirm": false,
+        "maxAffectedRecords": 0,
+        "dryRunSupported": false
+      },
+      "projectTags": ["manabie"],
+      "enabled": true
+    }
+  ]
+}

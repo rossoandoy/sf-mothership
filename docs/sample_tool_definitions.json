@@ -1,0 +1,161 @@
+{
+  "tools": [
+    {
+      "id": "quick-record-viewer",
+      "title": "現在レコードの周辺情報クイックビューア",
+      "description": "今見ているレコードの基本情報と関連サマリを表示する",
+      "category": "viewer",
+      "pageMatch": ["recordPage"],
+      "objectMatch": ["*"],
+      "inputs": [],
+      "dataSources": ["currentRecord", "soql"],
+      "operations": [
+        {
+          "type": "builtin",
+          "handler": "quickRecordViewer"
+        }
+      ],
+      "output": {
+        "type": "card"
+      },
+      "safety": {
+        "level": "readOnly",
+        "allowInProd": true,
+        "requireConfirm": false,
+        "maxAffectedRecords": 0,
+        "dryRunSupported": false
+      },
+      "projectTags": ["default", "manabie"],
+      "enabled": true
+    },
+    {
+      "id": "field-context-inspector",
+      "title": "項目・画面コンテキスト調査ツール",
+      "description": "現在画面の項目やAPI名、補助説明を表示する",
+      "category": "viewer",
+      "pageMatch": ["recordPage"],
+      "objectMatch": ["*"],
+      "inputs": [],
+      "dataSources": ["describe", "projectPackStatic"],
+      "operations": [
+        {
+          "type": "builtin",
+          "handler": "fieldContextInspector"
+        }
+      ],
+      "output": {
+        "type": "table"
+      },
+      "safety": {
+        "level": "readOnly",
+        "allowInProd": true,
+        "requireConfirm": false,
+        "maxAffectedRecords": 0,
+        "dryRunSupported": false
+      },
+      "projectTags": ["default", "manabie"],
+      "enabled": true
+    },
+    {
+      "id": "access-diagnostic",
+      "title": "権限・表示差異の一次診断ツール",
+      "description": "見えない・編集できない等の原因候補を表示する",
+      "category": "diagnostic",
+      "pageMatch": ["recordPage"],
+      "objectMatch": ["*"],
+      "inputs": [],
+      "dataSources": ["describe", "currentRecord"],
+      "operations": [
+        {
+          "type": "builtin",
+          "handler": "accessDiagnostic"
+        }
+      ],
+      "output": {
+        "type": "card"
+      },
+      "safety": {
+        "level": "readOnly",
+        "allowInProd": true,
+        "requireConfirm": false,
+        "maxAffectedRecords": 0,
+        "dryRunSupported": false
+      },
+      "projectTags": ["default", "manabie"],
+      "enabled": true
+    },
+    {
+      "id": "test-data-creator",
+      "title": "テストデータ簡易作成ツール",
+      "description": "検証やUAT用の少量データを作成する",
+      "category": "action",
+      "pageMatch": ["recordPage"],
+      "objectMatch": ["*"],
+      "inputs": [
+        {
+          "id": "recordName",
+          "label": "レコード名",
+          "type": "text",
+          "required": true,
+          "defaultValue": "",
+          "helpText": "作成するレコードのName項目"
+        },
+        {
+          "id": "count",
+          "label": "作成件数",
+          "type": "number",
+          "required": false,
+          "defaultValue": "1",
+          "helpText": "1〜5件まで"
+        }
+      ],
+      "dataSources": ["describe", "currentRecord"],
+      "operations": [
+        {
+          "type": "builtin",
+          "handler": "testDataCreator"
+        }
+      ],
+      "output": {
+        "type": "card"
+      },
+      "safety": {
+        "level": "lowRiskWrite",
+        "allowInProd": false,
+        "requireConfirm": true,
+        "maxAffectedRecords": 5,
+        "dryRunSupported": true
+      },
+      "projectTags": ["default", "manabie"],
+      "enabled": true
+    },
+    {
+      "id": "uat-guide",
+      "title": "UAT/導入ガイド差し込みツール",
+      "description": "画面ごとに確認観点や説明を表示する",
+      "category": "guide",
+      "pageMatch": ["recordPage", "objectHome"],
+      "objectMatch": ["*"],
+      "inputs": [],
+      "dataSources": ["projectPackStatic"],
+      "operations": [
+        {
+          "type": "builtin",
+          "handler": "uatGuide"
+        }
+      ],
+      "output": {
+        "type": "guidePanel"
+      },
+      "safety": {
+        "level": "readOnly",
+        "allowInProd": true,
+        "requireConfirm": false,
+        "maxAffectedRecords": 0,
+        "dryRunSupported": false
+      },
+      "projectTags": ["default", "manabie"],
+      "enabled": true
+    }
+  ]
+}
