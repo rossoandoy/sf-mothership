@@ -1,7 +1,18 @@
+/**
+ * Salesforce REST API クライアント
+ *
+ * Bearer token認証パターンは SIR addon/inspector.js sfConn.rest() に基づく。
+ * UI側から直接fetchするパターンは sf-custom-config-tool lib/sf-api.ts に基づく。
+ *
+ * @see https://github.com/tprouvot/Salesforce-Inspector-reloaded
+ */
+
 import type { Result } from '@/shared/result';
 import { ok, err } from '@/shared/result';
 import { logger } from '@/shared/logger';
 
+// TODO: SIR の getLatestApiVersionFromOrg() パターンで動的取得に変更
+// @see https://github.com/tprouvot/Salesforce-Inspector-reloaded/blob/master/addon/utils.js
 const API_VERSION = 'v62.0';
 
 /**

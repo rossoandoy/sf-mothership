@@ -1,9 +1,25 @@
+/**
+ * Salesforce セッション管理
+ *
+ * 認証パターンは Salesforce Inspector Reloaded の実装に基づく:
+ * - ドメイン変換: SIR addon/inspector.js getMyDomain()
+ * - Cookie取得 + fallback: SIR addon/background.js getSfHost handler
+ * - Cookie broker パターン: sf-custom-config-tool background/service-worker.ts
+ *
+ * @see https://github.com/tprouvot/Salesforce-Inspector-reloaded
+ * @see https://github.com/rossoandoy/sf-custom-config-tool
+ */
+
 import type { Result } from '@/shared/result';
 import { ok, err } from '@/shared/result';
 import { logger } from '@/shared/logger';
 
 /**
  * Lightningドメイン等をAPIホスト名（*.my.salesforce.com）に変換する
+ *
+ * SIR の getMyDomain() と同等のロジック。
+ * Lightning cookieは REST API で INVALID_SESSION_ID を返すため、
+ * 必ず MyDomain ホスト名に変換してからcookie取得・API呼出を行う。
  *
  * 例:
  *   "mycompany.lightning.force.com" → "mycompany.my.salesforce.com"

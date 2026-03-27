@@ -71,9 +71,55 @@ src/
 - `docs/sample_tool_definitions.json` — ツール定義サンプル
 - `docs/claude_code_bootstrap_prompt.md` — Claude Code実行指示
 
+## 宣言的ツール定義
+
+JSONだけで新しいSalesforceツールを作成できます。TypeScriptコード不要。
+
+```json
+{
+  "id": "my-tool",
+  "title": "カスタムツール",
+  "operations": [
+    { "type": "describe", "stepId": "desc" }
+  ],
+  "output": {
+    "type": "table",
+    "mapping": {
+      "type": "table",
+      "sourceStepId": "desc",
+      "rowsPath": "fields",
+      "columns": [
+        { "key": "name", "label": "API名", "value": "{{row.name}}" }
+      ]
+    }
+  }
+}
+```
+
+詳細: [`docs/tool-authoring-guide.md`](docs/tool-authoring-guide.md) / [`docs/tool-recipes.md`](docs/tool-recipes.md)
+
 ## 安全設計
 
 - Production環境ではwrite系ツールがデフォルト無効
 - 全write操作にconfirmダイアログ必須
 - データはSalesforceサーバーとのみ通信（第三者送信なし）
 - セッションIDのログ出力禁止
+
+## Acknowledgments
+
+本プロジェクトは以下のオープンソースプロジェクトの技術・パターンに大きく依拠しています。
+
+### [Salesforce Inspector Reloaded](https://github.com/tprouvot/Salesforce-Inspector-reloaded)
+
+by Thomas Prouvot (MIT License) / Original: [Salesforce Inspector](https://github.com/sorenkrabbe/Chrome-Salesforce-inspector) by Soren Krabbe
+
+50,000+ ユーザーを持つChrome拡張。SF Mothershipの認証方式（cookie-based session reuse）、
+Lightning→MyDomainドメイン変換、REST API通信パターン、レコードID検証、sandbox判定など
+核心的な技術基盤はSIRの実装に学んでいます。
+
+### [sf-custom-config-tool](https://github.com/rossoandoy/sf-custom-config-tool)
+
+Service Workerをcookie broker専任とし、UI側から直接Salesforce APIをfetchする
+安定した接続パターンを参考にしています。
+
+詳細な対応表は [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md) を参照してください。

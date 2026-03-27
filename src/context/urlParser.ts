@@ -1,3 +1,10 @@
+/**
+ * Salesforce URL解析
+ *
+ * URL構造とレコードID抽出パターンは SIR addon/button.js, addon/popup.js を参考。
+ * @see https://github.com/tprouvot/Salesforce-Inspector-reloaded
+ */
+
 import type { PageContext, PageType } from '@/types/context';
 
 /**

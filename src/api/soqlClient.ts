@@ -1,3 +1,11 @@
+/**
+ * SOQL クエリクライアント
+ *
+ * クエリ実行・ID検証パターンは SIR addon/data-export.js, addon/popup.js に基づく。
+ * TODO: SIR の nextRecordsUrl 自動ページネーション対応
+ * @see https://github.com/tprouvot/Salesforce-Inspector-reloaded
+ */
+
 import type { Result } from '@/shared/result';
 import type { SoqlResponse } from '@/types/salesforce';
 import { sfFetch } from './client';
