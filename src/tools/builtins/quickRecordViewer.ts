@@ -34,20 +34,27 @@ export const quickRecordViewerHandler: ToolHandler = async (ctx) => {
   if (describeResult.ok) {
     const relationships = describeResult.data.childRelationships
       .filter(r => r.relationshipName && !r.deprecatedAndHidden)
-      .slice(0, 5);
+      .slice(0, 3);
 
-    for (const rel of relationships) {
-      const countSoql = `SELECT COUNT() FROM ${rel.childSObject} WHERE ${rel.field} = '${recordId}'`;
-      const countResult = await callApi<{ totalSize: number }>(
-        'query',
-        { domain: orgDomain, soql: countSoql }
-      );
-      if (countResult.ok) {
-        relatedCounts.push({
-          label: rel.relationshipName ?? rel.childSObject,
-          count: countResult.data.totalSize,
-        });
-      }
+    const countResults = await Promise.all(
+      relationships.map(async (rel) => {
+        const countSoql = `SELECT COUNT() FROM ${rel.childSObject} WHERE ${rel.field} = '${recordId}'`;
+        const countResult = await callApi<{ totalSize: number }>(
+          'query',
+          { domain: orgDomain, soql: countSoql }
+        );
+        if (countResult.ok) {
+          return {
+            label: rel.relationshipName ?? rel.childSObject,
+            count: countResult.data.totalSize,
+          };
+        }
+        return null;
+      })
+    );
+
+    for (const item of countResults) {
+      if (item) relatedCounts.push(item);
     }
   }
 

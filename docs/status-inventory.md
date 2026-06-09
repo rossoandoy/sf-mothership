@@ -1,6 +1,6 @@
 # SF Mothership 現状棚卸し
 
-最終更新: 2026-06-05（v0.3.0）
+最終更新: 2026-06-09（v0.4.0）
 
 ## バージョン参照箇所
 
@@ -20,6 +20,9 @@
 - Builtin ツール 8本 + 宣言的ツール 3本
 - Project Pack（default / manabie）
 - コンテキスト主導 3タブ UI + 上級ツールドロワー
+- Extension context invalidated 修正（v0.3.1）
+- InstantSummary / タブキャッシュ / stale バナー（v0.4.0）
+- Codex UX レビュー記録 `docs/ux-review-v0.4.md`
 
 ## 未達だった Acceptance（v0.2.0 で対応）
 
@@ -39,7 +42,15 @@
 - デフォルトは Salesforce のみ通信（README / safety ルール準拠）
 - sessionId や生レコードデータの外部送信は禁止
 
-## 今後の拡張候補（v0.4.0 以降）
+## UX 改善候補（v0.5.0 以降、ux-review-v0.4 より）
+
+- 部分表示（ツール完了ごとの InstantSummary 更新）
+- stale 状態の細分化と再読み込み CTA ボタン
+- objectHome 専用 Instant レイアウト
+- 文脈変更時の activeTab リセット
+- キャッシュ TTL / stale-while-revalidate
+
+## 今後の拡張候補（v0.5.0 以降）
 
 - Codex App Server 本体の同梱
 - report-assistant 本格化（実データ集計）

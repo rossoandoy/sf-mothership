@@ -9,19 +9,22 @@ Side Panelから現在画面の文脈に応じた小ツールを提供する。
 
 **万能ツールではなく母艦**。案件ごとに必要な補助ツールを小さく追加できる。
 
-## UI（v0.3.0）
+## UI（v0.4.0）
 
 Side Panel を開くと、ツール選択なしで以下が自動表示されます。
 
 | タブ | 内容 |
 |------|------|
-| 今すぐ | レコード概要 + アクセス診断 |
+| 今すぐ | サマリ 1 画面（Profile・主要項目・編集不可件数。詳細は展開） |
 | 項目 | フィールド一覧（検索付き） |
 | ガイド | UAT チェックリスト（Pack 連動） |
 
+- タブ往復はキャッシュで即表示（同一文脈）
+- 拡張リロード後は Salesforce タブの再読み込み案内を表示
+
 テストデータ作成・AI 補助・宣言的ツールはフッターの「もっと見る」から。
 
-詳細: [`docs/product-vision.md`](docs/product-vision.md) / [`docs/ui-redesign.md`](docs/ui-redesign.md)
+詳細: [`docs/product-vision.md`](docs/product-vision.md) / [`docs/ui-redesign.md`](docs/ui-redesign.md) / [`docs/ux-review-v0.4.md`](docs/ux-review-v0.4.md)
 
 ## 技術スタック
 

@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "SF Mothership",
-  "version": "0.4.0",
+  "version": "0.3.0",
   "description": "Salesforce導入支援Chrome拡張母艦 — 現場の面倒をすぐ小ツール化",
   "permissions": [
     "cookies",

@@ -3,6 +3,7 @@ import type { PackData } from '@/types/pack';
 import { getActivePack, loadPack } from '@/packs/packLoader';
 import { setGuides } from '@/tools/builtins/uatGuide';
 import { applyPackTools } from '@/runtime/packRegistry';
+import { clearTabPanelCache } from './useTabPanel';
 import { logger } from '@/shared/logger';
 
 /**
@@ -45,4 +46,5 @@ export function usePack(): string {
 function applyPackData(data: PackData) {
   setGuides(data.guides);
   applyPackTools(data.tools);
+  clearTabPanelCache();
 }

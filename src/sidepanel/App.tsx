@@ -12,11 +12,14 @@ import { usePack } from './hooks/usePack';
 import { useAppServerEnabled } from './hooks/useAppServerEnabled';
 import { APP_VERSION } from '@/shared/version';
 import type { ContextTabId } from '@/shared/tabTools';
+import { useExtensionStale } from './hooks/useExtensionStale';
+import { ExtensionStaleBanner } from './components/ExtensionStaleBanner';
 
 registerBuiltinTools();
 
 export function App() {
   const context = usePageContext();
+  const extensionStale = useExtensionStale(context);
   const orgInfo = useOrgInfo(context);
   const activePackId = usePack();
   const appServerEnabled = useAppServerEnabled();
@@ -50,6 +53,7 @@ export function App() {
       </header>
 
       <ContextBar context={context} />
+      {extensionStale && <ExtensionStaleBanner />}
 
       <main className="flex-1 flex flex-col min-h-0">
         {inToolFlow ? (

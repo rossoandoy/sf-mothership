@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/ja/).
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-06-09
+
+### Added
+
+- `InstantSummary` — 「今すぐ」タブのサマリ 1 画面化（詳細は展開）
+- `useTabPanel` キャッシュ + 並列ツール実行
+- `ExtensionStaleBanner` — 拡張リロード後の Salesforce タブ再読み込み案内
+- `docs/ux-review-v0.4.md` — Codex UX レビュー結果（P0/P1/P2）
+- `useTabPanel` / `extensionContext` のユニットテスト
+
+### Changed
+
+- `quickRecordViewer` の関連件数を 3 件上限 + COUNT 並列化
+- Pack 切替時にタブパネルキャッシュをクリア
+
+## [0.3.1] - 2026-06-09
+
+### Fixed
+
+- 拡張リロード後に古い Content Script が `Extension context invalidated` を投げ続ける問題
+- `isExtensionContextValid` / `safeSendMessage` によるコンテキスト検証と監視停止
+
 ## [0.3.0] - 2026-06-05
 
 ### Added
