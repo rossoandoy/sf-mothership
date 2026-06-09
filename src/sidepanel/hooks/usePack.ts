@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import type { PackData } from '@/types/pack';
 import { getActivePack, loadPack } from '@/packs/packLoader';
 import { setGuides } from '@/tools/builtins/uatGuide';
-import { registerDeclarativeTool } from '@/runtime/toolRegistry';
+import { applyPackTools } from '@/runtime/packRegistry';
 import { logger } from '@/shared/logger';
 
 /**
@@ -43,20 +43,6 @@ export function usePack(): string {
 }
 
 function applyPackData(data: PackData) {
-  // ガイドをセット
   setGuides(data.guides);
-
-  // 宣言的ツールを登録（同じIDなら上書きされる）
-  for (const toolDef of data.tools) {
-    try {
-      registerDeclarativeTool(toolDef);
-    } catch (e: unknown) {
-      const message = e instanceof Error ? e.message : '不明なエラー';
-      logger.warn(`宣言的ツール登録失敗: ${toolDef.id}`, message);
-    }
-  }
-
-  if (data.tools.length > 0) {
-    logger.info(`Pack宣言的ツール登録: ${data.tools.length}件`);
-  }
+  applyPackTools(data.tools);
 }

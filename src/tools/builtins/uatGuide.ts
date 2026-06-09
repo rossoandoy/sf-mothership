@@ -1,7 +1,9 @@
-import type { ToolHandler, ToolResult, GuidePanelData } from '@/types/tool';
+import type { ToolHandler, ToolResult } from '@/types/tool';
+import type { SoqlResponse, SObjectRecord } from '@/types/salesforce';
 import { ok } from '@/shared/result';
+import { callApi } from '@/sidepanel/hooks/useApi';
+import { escapeSOQL, isValidRecordId } from '@/api/soqlClient';
 
-// ガイド定義の型（Pack JSONから読み込む）
 export interface GuideEntry {
   id: string;
   pageMatch: string[];
@@ -14,7 +16,6 @@ export interface GuideEntry {
   }>;
 }
 
-// MVPではビルトインのガイドデータを使用（Phase 6でPack JSONから読み込み）
 let guides: GuideEntry[] = [];
 
 export function setGuides(data: GuideEntry[]): void {
@@ -25,16 +26,44 @@ export function getGuides(): GuideEntry[] {
   return guides;
 }
 
+/**
+ * レコードの RecordType DeveloperName を取得（recordTypeMatch 用）
+ */
+async function fetchRecordTypeDeveloperName(
+  orgDomain: string,
+  objectApiName: string,
+  recordId: string
+): Promise<string | null> {
+  if (!isValidRecordId(recordId)) return null;
+
+  const soql = `SELECT RecordType.DeveloperName FROM ${objectApiName} WHERE Id = '${escapeSOQL(recordId)}' LIMIT 1`;
+  const result = await callApi<SoqlResponse<SObjectRecord & { RecordType?: { DeveloperName: string } }>>(
+    'query',
+    { domain: orgDomain, soql }
+  );
+
+  if (!result.ok) return null;
+
+  const record = result.data.records[0];
+  const rt = record?.RecordType;
+  if (rt && typeof rt === 'object' && 'DeveloperName' in rt) {
+    return String((rt as { DeveloperName: string }).DeveloperName);
+  }
+  return null;
+}
+
 export const uatGuideHandler: ToolHandler = async (ctx) => {
   const { pageContext } = ctx;
-  const { objectApiName, pageType } = pageContext;
+  const { objectApiName, pageType, orgDomain, recordId } = pageContext;
 
-  // ガイドをフィルタ
+  let recordTypeDeveloperName: string | null = null;
+  if (pageType === 'recordPage' && objectApiName && recordId) {
+    recordTypeDeveloperName = await fetchRecordTypeDeveloperName(orgDomain, objectApiName, recordId);
+  }
+
   const matchedGuides = guides.filter((guide) => {
-    // pageMatchフィルタ
     if (!guide.pageMatch.includes(pageType)) return false;
 
-    // objectMatchフィルタ
     if (
       objectApiName &&
       !guide.objectMatch.includes('*') &&
@@ -43,32 +72,38 @@ export const uatGuideHandler: ToolHandler = async (ctx) => {
       return false;
     }
 
+    if (guide.recordTypeMatch && guide.recordTypeMatch.length > 0) {
+      if (!recordTypeDeveloperName) return false;
+      if (!guide.recordTypeMatch.includes(recordTypeDeveloperName)) return false;
+    }
+
     return true;
   });
 
   if (matchedGuides.length === 0) {
-    const data: GuidePanelData = {
-      title: 'ガイドなし',
-      sections: [
-        {
-          heading: '',
-          items: ['この画面に対応するUATガイドは登録されていません。'],
-        },
-      ],
-    };
-
-    return ok({ outputType: 'guidePanel', data } as ToolResult);
+    return ok({
+      outputType: 'guidePanel',
+      data: {
+        title: 'ガイドなし',
+        sections: [
+          {
+            heading: '',
+            items: ['この画面に対応するUATガイドは登録されていません。'],
+          },
+        ],
+      },
+    } as ToolResult);
   }
 
-  // 複数マッチした場合は全て結合
   const allSections = matchedGuides.flatMap((g) => g.sections);
 
-  const data: GuidePanelData = {
-    title: matchedGuides.length === 1
-      ? (matchedGuides[0]?.title ?? 'UAT ガイド')
-      : `UAT ガイド (${matchedGuides.length}件マッチ)`,
-    sections: allSections,
-  };
-
-  return ok({ outputType: 'guidePanel', data } as ToolResult);
+  return ok({
+    outputType: 'guidePanel',
+    data: {
+      title: matchedGuides.length === 1
+        ? (matchedGuides[0]?.title ?? 'UAT ガイド')
+        : `UAT ガイド (${matchedGuides.length}件マッチ)`,
+      sections: allSections,
+    },
+  } as ToolResult);
 };

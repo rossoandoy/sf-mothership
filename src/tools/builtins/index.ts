@@ -5,6 +5,9 @@ import { fieldContextInspectorHandler } from './fieldContextInspector';
 import { accessDiagnosticHandler } from './accessDiagnostic';
 import { testDataCreatorHandler } from './testDataCreator';
 import { uatGuideHandler } from './uatGuide';
+import { toolDefinitionAssistantHandler } from './toolDefinitionAssistant';
+import { accessDiagnosticExplainerHandler } from './accessDiagnosticExplainer';
+import { reportAnalyzerHandler } from './reportAnalyzer';
 
 // ツール定義
 const toolDefinitions: Array<{ definition: ToolDefinition; handler: typeof quickRecordViewerHandler }> = [
@@ -116,7 +119,7 @@ const toolDefinitions: Array<{ definition: ToolDefinition; handler: typeof quick
         maxAffectedRecords: 5,
         dryRunSupported: true,
       },
-      projectTags: ['default'],
+      projectTags: ['default', 'advanced'],
       enabled: true,
     },
     handler: testDataCreatorHandler,
@@ -145,10 +148,99 @@ const toolDefinitions: Array<{ definition: ToolDefinition; handler: typeof quick
     },
     handler: uatGuideHandler,
   },
+  {
+    definition: {
+      id: 'tool-definition-assistant',
+      title: 'ツール定義生成 (AI)',
+      description: '現在オブジェクトから Pack JSON ツール定義ドラフトを生成（App Server必須）',
+      category: 'guide',
+      pageMatch: ['recordPage', 'objectHome'],
+      objectMatch: ['*'],
+      inputs: [],
+      dataSources: ['describe'],
+      operations: [{ type: 'builtin', handler: 'toolDefinitionAssistant' }],
+      output: { type: 'guidePanel' },
+      safety: {
+        level: 'readOnly',
+        allowInProd: true,
+        requireConfirm: false,
+        maxAffectedRecords: 0,
+        dryRunSupported: false,
+      },
+      projectTags: ['ai', 'default'],
+      enabled: true,
+    },
+    handler: toolDefinitionAssistantHandler,
+  },
+  {
+    definition: {
+      id: 'access-diagnostic-explainer',
+      title: 'アクセス診断 AI説明',
+      description: '権限診断結果を自然言語で説明（App Server必須）',
+      category: 'diagnostic',
+      pageMatch: ['recordPage', 'objectHome'],
+      objectMatch: ['*'],
+      inputs: [],
+      dataSources: ['describe'],
+      operations: [{ type: 'builtin', handler: 'accessDiagnosticExplainer' }],
+      output: { type: 'guidePanel' },
+      safety: {
+        level: 'readOnly',
+        allowInProd: true,
+        requireConfirm: false,
+        maxAffectedRecords: 0,
+        dryRunSupported: false,
+      },
+      projectTags: ['ai', 'default'],
+      enabled: true,
+    },
+    handler: accessDiagnosticExplainerHandler,
+  },
+  {
+    definition: {
+      id: 'report-analyzer',
+      title: 'レポート分析 (AI)',
+      description: '分析目的に沿ったSOQL案・手順を提示（App Server必須）',
+      category: 'guide',
+      pageMatch: ['recordPage', 'objectHome', 'other'],
+      objectMatch: ['*'],
+      inputs: [
+        {
+          id: 'analysisGoal',
+          label: '分析目的',
+          type: 'text',
+          required: true,
+          defaultValue: '',
+          helpText: '例: 今月の新規生徒数を校舎別に集計したい',
+        },
+        {
+          id: 'objectFilter',
+          label: '対象オブジェクト（任意）',
+          type: 'text',
+          required: false,
+          defaultValue: '',
+          helpText: '空欄の場合は現在画面のオブジェクトを使用',
+        },
+      ],
+      dataSources: ['projectPackStatic'],
+      operations: [{ type: 'builtin', handler: 'reportAnalyzer' }],
+      output: { type: 'guidePanel' },
+      safety: {
+        level: 'readOnly',
+        allowInProd: true,
+        requireConfirm: false,
+        maxAffectedRecords: 0,
+        dryRunSupported: false,
+      },
+      projectTags: ['ai', 'default'],
+      enabled: true,
+    },
+    handler: reportAnalyzerHandler,
+  },
 ];
 
 /**
- * ビルトインツール5本を登録する
+ * ビルトインツールを登録する
  */
 export function registerBuiltinTools(): void {
   for (const { definition, handler } of toolDefinitions) {

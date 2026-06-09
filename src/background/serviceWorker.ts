@@ -1,7 +1,8 @@
 import { logger } from '@/shared/logger';
 import { updateTabContext, getActiveTabContext, getTabContext } from './contextManager';
 import { getSessionId } from '@/api/auth';
-import type { ExtensionMessage, PageContextBroadcastMessage } from '@/types/messages';
+import { isLocalhostUrl } from '@/api/appServerSettings';
+import type { ExtensionMessage, PageContextBroadcastMessage, AppServerResponse } from '@/types/messages';
 
 // Side Panel をアクションクリックで開く
 chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });
@@ -50,6 +51,13 @@ chrome.runtime.onMessage.addListener(
         return true; // 非同期応答
       }
 
+      case 'APP_SERVER_REQUEST': {
+        proxyAppServerRequest(message.payload).then((result) => {
+          sendResponse(result);
+        });
+        return true;
+      }
+
       default:
         return false;
     }
@@ -67,5 +75,55 @@ chrome.tabs.onActivated.addListener((activeInfo) => {
     // Side Panelが開いていない場合は無視
   });
 });
+
+/**
+ * ローカル App Server へのプロキシ（CORS 回避）
+ * localhost / 127.0.0.1 のみ許可
+ */
+async function proxyAppServerRequest<T>(payload: {
+  baseUrl: string;
+  path: string;
+  method: 'GET' | 'POST';
+  body?: unknown;
+}): Promise<AppServerResponse<T>> {
+  if (!isLocalhostUrl(payload.baseUrl)) {
+    return { ok: false, error: 'App Server URL は localhost / 127.0.0.1 のみ許可されています' };
+  }
+
+  const url = `${payload.baseUrl.replace(/\/$/, '')}${payload.path}`;
+
+  try {
+    const response = await fetch(url, {
+      method: payload.method,
+      headers: payload.method === 'POST'
+        ? { 'Content-Type': 'application/json', Accept: 'application/json' }
+        : { Accept: 'application/json' },
+      body: payload.method === 'POST' && payload.body != null
+        ? JSON.stringify(payload.body)
+        : undefined,
+    });
+
+    if (!response.ok) {
+      let detail = '';
+      try {
+        const errBody = await response.json() as { message?: string; error?: string };
+        detail = errBody.message ?? errBody.error ?? '';
+      } catch {
+        detail = response.statusText;
+      }
+      return { ok: false, error: `App Server エラー (HTTP ${response.status}): ${detail}` };
+    }
+
+    const data = await response.json() as T;
+    return { ok: true, data };
+  } catch (e: unknown) {
+    const message = e instanceof Error ? e.message : '不明なエラー';
+    logger.warn('App Server プロキシ失敗', { url, error: message });
+    return {
+      ok: false,
+      error: `App Server に接続できません。サーバーが起動しているか確認してください。 (${message})`,
+    };
+  }
+}
 
 logger.info('Service Worker 起動完了');

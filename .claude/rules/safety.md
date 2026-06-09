@@ -23,3 +23,5 @@
 - ユーザー入力を直接SOQLに連結（インジェクション防止）
 - セッションIDのログ出力やconsole.log
 - 外部サーバーへのデータ送信（Salesforceサーバー以外への通信禁止）
+- 例外: localhost の Codex App Server は Options でユーザーが明示オプトインした場合のみ
+- App Server 送信時は sessionId / token 等の機密情報を含めない（`appServerSafety.ts`）

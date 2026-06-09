@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "SF Mothership",
-  "version": "0.1.0",
+  "version": "0.4.0",
   "description": "Salesforce導入支援Chrome拡張母艦 — 現場の面倒をすぐ小ツール化",
   "permissions": [
     "cookies",
@@ -15,7 +15,9 @@
     "*://*.force.com/*",
     "*://*.lightning.force.com/*",
     "*://*.my.salesforce.com/*",
-    "*://*.salesforce-setup.com/*"
+    "*://*.salesforce-setup.com/*",
+    "http://127.0.0.1/*",
+    "http://localhost/*"
   ],
   "background": {
     "service_worker": "src/background/serviceWorker.ts",
@@ -29,7 +31,9 @@
         "*://*.lightning.force.com/*",
         "*://*.my.salesforce.com/*"
       ],
-      "js": ["src/content/contentScript.ts"],
+      "js": [
+        "src/content/contentScript.ts"
+      ],
       "run_at": "document_idle"
     }
   ],

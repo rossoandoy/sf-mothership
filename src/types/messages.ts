@@ -34,9 +34,25 @@ export interface SessionResponse {
   apiHostname: string;
 }
 
+// App Server リクエスト（Side Panel → Service Worker → localhost）
+export interface AppServerRequestMessage {
+  type: 'APP_SERVER_REQUEST';
+  payload: {
+    baseUrl: string;
+    path: string;
+    method: 'GET' | 'POST';
+    body?: unknown;
+  };
+}
+
+export type AppServerResponse<T> =
+  | { ok: true; data: T }
+  | { ok: false; error: string };
+
 export type ExtensionMessage =
   | PageContextUpdateMessage
   | GetPageContextMessage
   | PageContextBroadcastMessage
   | OpenSidePanelMessage
-  | GetSessionMessage;
+  | GetSessionMessage
+  | AppServerRequestMessage;

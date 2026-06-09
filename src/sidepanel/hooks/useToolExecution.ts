@@ -2,8 +2,8 @@ import { useState, useCallback } from 'react';
 import type { ToolDefinition, ToolResult, ToolExecutionContext } from '@/types/tool';
 import type { PageContext } from '@/types/context';
 import type { OrgInfo } from '@/types/salesforce';
-import { getToolById } from '@/runtime/toolRegistry';
 import { checkSafety } from '@/runtime/safetyGuard';
+import { executeTool as runTool } from '@/runtime/toolExecutor';
 
 export type ToolExecutionState =
   | { phase: 'idle' }
@@ -21,15 +21,6 @@ interface UseToolExecutionOptions {
 export function useToolExecution({ pageContext, orgInfo }: UseToolExecutionOptions) {
   const [state, setState] = useState<ToolExecutionState>({ phase: 'idle' });
 
-  const selectTool = useCallback((tool: ToolDefinition) => {
-    if (tool.inputs.length > 0) {
-      setState({ phase: 'inputting', tool });
-    } else {
-      // 入力不要なら直接実行
-      executeTool(tool, {});
-    }
-  }, [pageContext, orgInfo]);
-
   const executeTool = useCallback(async (
     tool: ToolDefinition,
     inputs: Record<string, string>,
@@ -37,13 +28,6 @@ export function useToolExecution({ pageContext, orgInfo }: UseToolExecutionOptio
   ) => {
     if (!pageContext || !orgInfo) return;
 
-    const registered = getToolById(tool.id);
-    if (!registered) {
-      setState({ phase: 'error', tool, error: 'ツールが見つかりません' });
-      return;
-    }
-
-    // SafetyCheck
     const safetyResult = checkSafety(tool, orgInfo);
     if (!safetyResult.ok) {
       setState({ phase: 'error', tool, error: safetyResult.error });
@@ -56,12 +40,22 @@ export function useToolExecution({ pageContext, orgInfo }: UseToolExecutionOptio
       return;
     }
 
-    // confirmが必要でdryRunをまずやる
+    const ctx: ToolExecutionContext = {
+      pageContext,
+      orgInfo,
+      inputs,
+      isDryRun: options?.isDryRun ?? false,
+    };
+
+    // confirm が必要で未確認の場合
     if (safety.requiresConfirm && !options?.confirmed) {
       if (safety.supportsDryRun) {
         setState({ phase: 'loading', tool });
-        const ctx: ToolExecutionContext = { pageContext, orgInfo, inputs, isDryRun: true };
-        const dryRunResult = await registered.handler(ctx);
+        const dryRunResult = await runTool({
+          toolId: tool.id,
+          context: { ...ctx, isDryRun: true },
+          confirmed: true,
+        });
         if (dryRunResult.ok) {
           setState({ phase: 'confirm', tool, inputs, dryRunResult: dryRunResult.data });
         } else {
@@ -73,17 +67,15 @@ export function useToolExecution({ pageContext, orgInfo }: UseToolExecutionOptio
       return;
     }
 
-    // 実行
     setState({ phase: 'loading', tool });
-    const ctx: ToolExecutionContext = {
-      pageContext,
-      orgInfo,
-      inputs,
-      isDryRun: options?.isDryRun ?? false,
-    };
 
     try {
-      const result = await registered.handler(ctx);
+      const result = await runTool({
+        toolId: tool.id,
+        context: ctx,
+        confirmed: options?.confirmed ?? false,
+      });
+
       if (result.ok) {
         setState({ phase: 'result', tool, result: result.data });
       } else {
@@ -94,6 +86,14 @@ export function useToolExecution({ pageContext, orgInfo }: UseToolExecutionOptio
       setState({ phase: 'error', tool, error: message });
     }
   }, [pageContext, orgInfo]);
+
+  const selectTool = useCallback((tool: ToolDefinition) => {
+    if (tool.inputs.length > 0) {
+      setState({ phase: 'inputting', tool });
+    } else {
+      executeTool(tool, {});
+    }
+  }, [executeTool]);
 
   const confirmExecution = useCallback(() => {
     if (state.phase !== 'confirm') return;
