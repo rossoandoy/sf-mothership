@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/ja/).
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-06-05
+
+### Added
+
+- コンテキスト主導 UI: 「今すぐ」「項目」「ガイド」の3タブ自動表示
+- `ContextBar` / `ContextTabs` / タブパネルコンポーネント
+- `useTabPanel` フック（タブ切替時の自動ツール実行）
+- 「もっと見る」ドロワー（上級ツール・AI・Pack 宣言的ツール）
+- `getDrawerTools` — App Server 無効時に AI ツールを非表示
+- プロダクトビジョン・UI 再設計ドキュメント
+
+### Changed
+
+- Side Panel の主画面をツール一覧からタブ UI に全面変更
+- テストデータ作成ツールを `advanced` タグ付きドロワー導線に移動
+
 ## [0.2.0] - 2026-06-05
 
 ### Added

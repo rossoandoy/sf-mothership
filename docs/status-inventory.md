@@ -1,6 +1,6 @@
 # SF Mothership 現状棚卸し
 
-最終更新: 2026-06-05（v0.2.0）
+最終更新: 2026-06-05（v0.3.0）
 
 ## バージョン参照箇所
 
@@ -19,6 +19,7 @@
 - Tool Runtime（Registry, Executor, SafetyGuard, DeclarativeEngine）
 - Builtin ツール 8本 + 宣言的ツール 3本
 - Project Pack（default / manabie）
+- コンテキスト主導 3タブ UI + 上級ツールドロワー
 
 ## 未達だった Acceptance（v0.2.0 で対応）
 
@@ -38,9 +39,8 @@
 - デフォルトは Salesforce のみ通信（README / safety ルール準拠）
 - sessionId や生レコードデータの外部送信は禁止
 
-## 今後の拡張候補（v0.3.0 以降）
+## 今後の拡張候補（v0.4.0 以降）
 
-- コンテキスト主導 3タブ UI
 - Codex App Server 本体の同梱
 - report-assistant 本格化（実データ集計）
 - Service Worker 経由の Salesforce API プロキシ統一

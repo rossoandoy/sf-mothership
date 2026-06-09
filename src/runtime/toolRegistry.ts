@@ -3,6 +3,7 @@ import type { PageContext } from '@/types/context';
 import type { OrgInfo } from '@/types/salesforce';
 import { executeDeclarativeTool } from './declarativeEngine';
 import { logger } from '@/shared/logger';
+import { TAB_TOOL_IDS } from '@/shared/tabTools';
 
 interface RegisteredTool {
   definition: ToolDefinition;
@@ -61,6 +62,32 @@ export function getAvailableTools(
   }
 
   return results;
+}
+
+export interface DrawerToolsOptions {
+  appServerEnabled?: boolean;
+}
+
+/**
+ * 「もっと見る」ドロワー用ツール一覧
+ * タブ配線済みツールを除外し、AI は App Server 有効時のみ
+ */
+export function getDrawerTools(
+  context: PageContext,
+  orgInfo: OrgInfo | null,
+  options: DrawerToolsOptions = {}
+): ToolDefinition[] {
+  const { appServerEnabled = false } = options;
+
+  return getAvailableTools(context, orgInfo).filter((definition) => {
+    if (TAB_TOOL_IDS.has(definition.id)) return false;
+
+    if (definition.projectTags.includes('ai') && !appServerEnabled) {
+      return false;
+    }
+
+    return true;
+  });
 }
 
 /**

@@ -9,6 +9,20 @@ Side Panelから現在画面の文脈に応じた小ツールを提供する。
 
 **万能ツールではなく母艦**。案件ごとに必要な補助ツールを小さく追加できる。
 
+## UI（v0.3.0）
+
+Side Panel を開くと、ツール選択なしで以下が自動表示されます。
+
+| タブ | 内容 |
+|------|------|
+| 今すぐ | レコード概要 + アクセス診断 |
+| 項目 | フィールド一覧（検索付き） |
+| ガイド | UAT チェックリスト（Pack 連動） |
+
+テストデータ作成・AI 補助・宣言的ツールはフッターの「もっと見る」から。
+
+詳細: [`docs/product-vision.md`](docs/product-vision.md) / [`docs/ui-redesign.md`](docs/ui-redesign.md)
+
 ## 技術スタック
 
 - Chrome Extension Manifest V3
