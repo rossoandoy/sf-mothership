@@ -94,3 +94,13 @@
 - [x] objectHome（一覧画面）で「今すぐ」= アクセス診断サマリ（empty ではない）
 - [x] タブ往復で同一文脈はキャッシュから即表示される
 - [x] 関連レコード件数は最大 3 件・並列 COUNT
+
+## AI Provider / Gemini Nano PoC（v0.5.0）
+- [x] AI provider mode（App Server only / Chrome Prompt only / Hybrid）を Options 画面で設定できる
+- [x] デフォルトは App Server only で、Chrome Prompt は通常ツール実行の候補にならない
+- [x] Chrome Prompt / Gemini Nano は Options 画面の availability / smoke prompt で明示検証できる
+- [x] Chrome Prompt は `ready` の場合のみ通常 AI ツールの provider 候補になる
+- [x] AI ツール結果に provider と処理先（オンデバイス処理 / localhost App Server）が表示される
+- [x] App Server proxy は `/health` と `/v1/chat` 以外の path を拒否する
+- [x] App Server proxy は request size と timeout を制限する
+- [x] App Server 送信前 sanitizer はネスト・配列内の secret-like key を除去する

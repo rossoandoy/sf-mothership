@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/ja/).
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-06-12
+
 ### Added
 
 - Gemini Nano / Codex App Server 比較ドキュメント `docs/ai-architecture-gemini-nano.md`
