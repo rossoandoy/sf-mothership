@@ -10,21 +10,30 @@ export interface TabPanelResult {
   result: ToolResult;
 }
 
-export type TabPanelStatus = 'idle' | 'loading' | 'ready' | 'error' | 'empty';
+export type TabPanelStatus = 'idle' | 'loading' | 'partial' | 'ready' | 'error' | 'empty';
 
 export interface TabPanelState {
   status: TabPanelStatus;
   results: TabPanelResult[];
   error: string | null;
+  pendingToolIds: string[];
 }
 
 const INITIAL_STATE: TabPanelState = {
   status: 'idle',
   results: [],
   error: null,
+  pendingToolIds: [],
 };
 
-const tabPanelCache = new Map<string, TabPanelState>();
+interface TabPanelCacheEntry {
+  state: TabPanelState;
+  cachedAt: number;
+}
+
+export const TAB_PANEL_CACHE_TTL_MS = 5 * 60 * 1000;
+
+const tabPanelCache = new Map<string, TabPanelCacheEntry>();
 
 export function buildTabPanelCacheKey(tabId: ContextTabId, context: PageContext): string {
   return [
@@ -33,7 +42,25 @@ export function buildTabPanelCacheKey(tabId: ContextTabId, context: PageContext)
     context.pageType,
     context.objectApiName ?? '',
     context.recordId ?? '',
+    context.url,
   ].join('|');
+}
+
+export function createLoadingTabPanelState(toolIds: string[]): TabPanelState {
+  return {
+    status: 'loading',
+    results: [],
+    error: null,
+    pendingToolIds: [...toolIds],
+  };
+}
+
+export function isTabPanelCacheFresh(
+  entry: Pick<TabPanelCacheEntry, 'cachedAt'>,
+  now = Date.now(),
+  ttlMs = TAB_PANEL_CACHE_TTL_MS
+): boolean {
+  return now - entry.cachedAt <= ttlMs;
 }
 
 export function clearTabPanelCache(): void {
@@ -59,22 +86,26 @@ export function useTabPanel(
 
     const toolIds = getToolIdsForTab(tabId, pageContext.pageType);
     if (toolIds.length === 0) {
-      setState({ status: 'empty', results: [], error: null });
+      setState({ status: 'empty', results: [], error: null, pendingToolIds: [] });
       return;
     }
 
     const cacheKey = buildTabPanelCacheKey(tabId, pageContext);
     const cached = tabPanelCache.get(cacheKey);
-    if (cached && (cached.status === 'ready' || cached.status === 'error')) {
-      setState(cached);
+    if (cached && cached.state.status === 'ready' && isTabPanelCacheFresh(cached)) {
+      setState(cached.state);
       return;
     }
 
     const requestId = ++requestIdRef.current;
-    setState({ status: 'loading', results: [], error: null });
+    setState(createLoadingTabPanelState(toolIds));
 
     (async () => {
-      const execResults = await Promise.all(
+      const results: TabPanelResult[] = [];
+      const pending = new Set(toolIds);
+      let firstError: string | null = null;
+
+      await Promise.all(
         toolIds.map(async (toolId) => {
           const execResult = await runTool({
             toolId,
@@ -86,36 +117,39 @@ export function useTabPanel(
             },
             confirmed: false,
           });
-          return { toolId, execResult };
+
+          if (requestId !== requestIdRef.current) return;
+
+          pending.delete(toolId);
+          if (execResult.ok) {
+            results.push({ toolId, result: execResult.data });
+          } else if (!firstError) {
+            firstError = execResult.error;
+          }
+
+          const pendingToolIds = toolIds.filter((id) => pending.has(id));
+          const status: TabPanelStatus = pendingToolIds.length > 0
+            ? (results.length > 0 ? 'partial' : 'loading')
+            : (results.length > 0 ? 'ready' : 'error');
+          const nextState: TabPanelState = {
+            status,
+            results: [...results],
+            error: status === 'error'
+              ? firstError ?? 'データを取得できませんでした'
+              : firstError,
+            pendingToolIds,
+          };
+
+          if (status === 'ready') {
+            tabPanelCache.set(cacheKey, {
+              state: nextState,
+              cachedAt: Date.now(),
+            });
+          }
+
+          setState(nextState);
         })
       );
-
-      if (requestId !== requestIdRef.current) return;
-
-      const results: TabPanelResult[] = [];
-      let firstError: string | null = null;
-
-      for (const { toolId, execResult } of execResults) {
-        if (execResult.ok) {
-          results.push({ toolId, result: execResult.data });
-        } else if (!firstError) {
-          firstError = execResult.error;
-        }
-      }
-
-      let finalState: TabPanelState;
-      if (results.length > 0) {
-        finalState = { status: 'ready', results, error: firstError };
-      } else {
-        finalState = {
-          status: 'error',
-          results: [],
-          error: firstError ?? 'データを取得できませんでした',
-        };
-      }
-
-      tabPanelCache.set(cacheKey, finalState);
-      setState(finalState);
     })();
   }, [
     tabId,

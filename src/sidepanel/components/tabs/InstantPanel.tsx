@@ -19,7 +19,7 @@ export function InstantPanel({ pageContext, orgInfo, active }: InstantPanelProps
       emptyMessage="この画面では概要・権限情報を表示できません"
     >
       <InstantSummary results={state.results} />
-      {state.status === 'error' && state.error && state.results.length > 0 && (
+      {state.error && state.results.length > 0 && (
         <p className="text-xs text-amber-600 mt-2">{state.error}</p>
       )}
     </TabPanelShell>

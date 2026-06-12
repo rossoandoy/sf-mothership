@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/ja/).
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-06-12
+
+### Added
+
+- Side Panel の部分表示: タブ内ツールが完了した順に `InstantSummary` を更新
+- `ExtensionStatus` による状態別バナー（waiting / stale content script / Service Worker error）
+- 文脈 identity 変更時の「今すぐ」タブ自動復帰
+- タブパネルキャッシュ TTL（5分）と URL 差分対応
+
+### Changed
+
+- 初回読み込みを汎用スピナーから要約カード型スケルトンへ変更
+- transient error をタブパネルキャッシュへ永続化しないよう変更
+
 ## [0.5.0] - 2026-06-12
 
 ### Added

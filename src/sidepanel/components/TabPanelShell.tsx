@@ -12,11 +12,41 @@ export function TabPanelShell({
   emptyMessage,
   children,
 }: TabPanelShellProps) {
-  if (state.status === 'idle' || state.status === 'loading') {
+  const isLoadingLike = state.status === 'idle' || state.status === 'loading' || state.status === 'partial';
+
+  if (isLoadingLike && state.results.length === 0) {
     return (
-      <div className="flex items-center justify-center py-8">
-        <LoadingSpinner />
-        <span className="text-xs text-gray-500 ml-2">読み込み中...</span>
+      <div className="space-y-3" aria-busy="true">
+        <div className="border border-gray-200 rounded-lg overflow-hidden">
+          <div className="bg-gray-50 px-3 py-2 border-b border-gray-200">
+            <div className="h-4 w-28 rounded bg-gray-200 animate-pulse" />
+          </div>
+          <div className="divide-y divide-gray-100">
+            {[0, 1, 2, 3].map((index) => (
+              <div key={index} className="px-3 py-2 flex items-center gap-3">
+                <div className="h-3 w-20 rounded bg-gray-100 animate-pulse" />
+                <div className="h-3 flex-1 rounded bg-gray-100 animate-pulse" />
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="flex items-center text-xs text-gray-500">
+          <LoadingSpinner />
+          <span className="ml-2">概要を取得しています...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (isLoadingLike && state.results.length > 0) {
+    return (
+      <div className="space-y-2" aria-busy="true">
+        {children}
+        {state.pendingToolIds.length > 0 && (
+          <p className="text-xs text-gray-500">
+            残り {state.pendingToolIds.length} 件を取得中...
+          </p>
+        )}
       </div>
     );
   }

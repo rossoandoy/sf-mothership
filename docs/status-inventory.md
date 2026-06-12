@@ -1,6 +1,6 @@
 # SF Mothership 現状棚卸し
 
-最終更新: 2026-06-12（v0.5.0）
+最終更新: 2026-06-12（v0.6.0）
 
 ## バージョン参照箇所
 
@@ -26,6 +26,7 @@
 - AI provider abstraction / Gemini Nano PoC（v0.5.0）
 - App Server proxy hardening（path allowlist / timeout / request size）
 - App Server 送信前 sanitizer の深い再帰処理
+- Side Panel UX hardening（v0.6.0: 部分表示 / 状態別 stale バナー / active tab reset / cache TTL）
 
 ## 未達だった Acceptance（v0.2.0 で対応）
 
@@ -47,16 +48,18 @@
 - v0.5.0 より AI provider mode（App Server only / Chrome Prompt only / Hybrid）を Options で明示設定
 - Chrome Built-in AI / Gemini Nano は Options 画面の PoC ボタンで availability / smoke prompt を明示実行
 
-## UX 改善候補（v0.5.0 以降、ux-review-v0.4 より）
+## UX 改善状況（v0.6.0、ux-review-v0.4 より）
 
-- 部分表示（ツール完了ごとの InstantSummary 更新）
-- stale 状態の細分化と再読み込み CTA ボタン
+- [x] 部分表示（ツール完了ごとの InstantSummary 更新）
+- [x] stale 状態の細分化と再読み込み CTA ボタン
+- [x] 文脈変更時の activeTab リセット
+- [x] キャッシュ TTL / error 非永続化
 - objectHome 専用 Instant レイアウト
-- 文脈変更時の activeTab リセット
-- キャッシュ TTL / stale-while-revalidate
 
-## 今後の拡張候補（v0.6.0 以降）
+## 今後の拡張候補（v0.7.0 以降）
 
+- objectHome 専用 Instant レイアウト
+- cache stale-while-revalidate
 - Codex App Server 本体の同梱
 - report-assistant 本格化（実データ集計）
 - Service Worker 経由の Salesforce API プロキシ統一

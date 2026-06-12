@@ -104,3 +104,12 @@
 - [x] App Server proxy は `/health` と `/v1/chat` 以外の path を拒否する
 - [x] App Server proxy は request size と timeout を制限する
 - [x] App Server 送信前 sanitizer はネスト・配列内の secret-like key を除去する
+
+## Side Panel UX Hardening（v0.6.0）
+- [x] 「今すぐ」タブで、複数ツールのうち先に完了した結果から部分表示される
+- [x] 初回読み込みは汎用スピナーではなく要約カード型スケルトンを表示する
+- [x] 拡張状態は waiting / stale content script / Service Worker error を区別して案内できる
+- [x] Service Worker 一時不調では `再取得` CTA からページ文脈を再取得できる
+- [x] 文脈変更（recordId / objectApiName / objectHome URL）時に active tab が「今すぐ」へ戻る
+- [x] タブパネルキャッシュは 5分 TTL を持ち、error 状態を永続化しない
+- [x] objectHome/list view の URL 差分がタブパネルキャッシュキーに反映される
