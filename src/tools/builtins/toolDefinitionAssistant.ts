@@ -2,7 +2,7 @@ import type { ToolHandler, ToolResult, GuidePanelData } from '@/types/tool';
 import type { DescribeResult } from '@/types/salesforce';
 import { ok, err } from '@/shared/result';
 import { callApi } from '@/sidepanel/hooks/useApi';
-import { sendAppServerChat } from '@/api/appServerClient';
+import { generateAi, getProviderDestinationLabel } from '@/api/aiProvider';
 import { buildSafeContext, sanitizePayload } from '@/runtime/appServerSafety';
 
 /**
@@ -32,7 +32,7 @@ export const toolDefinitionAssistantHandler: ToolHandler = async (ctx) => {
     createable: f.createable,
   }));
 
-  const chatResult = await sendAppServerChat({
+  const chatResult = await generateAi({
     task: 'tool-definition',
     prompt: [
       '以下のSalesforceオブジェクト情報をもとに、SF Mothership用の宣言的ツール定義JSONドラフトを生成してください。',
@@ -45,6 +45,8 @@ export const toolDefinitionAssistantHandler: ToolHandler = async (ctx) => {
       objectLabel: describe.label,
       fields: fieldSummary,
     }),
+    locale: 'ja-JP',
+    privacy: 'localServerAllowed',
   });
 
   if (!chatResult.ok) return err(chatResult.error);
@@ -55,6 +57,13 @@ export const toolDefinitionAssistantHandler: ToolHandler = async (ctx) => {
       {
         heading: '生成結果（要確認・編集）',
         items: chatResult.data.content.split('\n').filter((line) => line.trim().length > 0),
+      },
+      {
+        heading: 'AI provider',
+        items: [
+          `Provider: ${chatResult.data.provider}${chatResult.data.model ? ` (${chatResult.data.model})` : ''}`,
+          `処理先: ${getProviderDestinationLabel(chatResult.data.provider)}`,
+        ],
       },
       {
         heading: '次のステップ',

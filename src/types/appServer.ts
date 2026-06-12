@@ -8,6 +8,15 @@ export interface AppServerSettings {
 export const DEFAULT_APP_SERVER_URL = 'http://127.0.0.1:3847';
 export const APP_SERVER_SETTINGS_KEY = 'app_server_settings';
 
+export type AiProviderMode = 'app-server-only' | 'chrome-prompt-only' | 'hybrid';
+
+export interface AiProviderSettings {
+  mode: AiProviderMode;
+  allowChromePromptInTools: boolean;
+}
+
+export const AI_PROVIDER_SETTINGS_KEY = 'ai_provider_settings';
+
 export interface AppServerHealthResponse {
   status: 'ok' | 'error';
   version?: string;

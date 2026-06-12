@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/ja/).
 
 ## [Unreleased]
 
+### Added
+
+- Gemini Nano / Codex App Server 比較ドキュメント `docs/ai-architecture-gemini-nano.md`
+- AI provider 抽象 (`generateAi`) と Chrome Built-in AI / Gemini Nano PoC
+- Options 画面に Chrome Prompt API availability / smoke prompt 確認を追加
+- Options 画面に AI provider mode（App Server only / Chrome Prompt only / Hybrid）設定を追加
+
+### Changed
+
+- AI 補助ツールを App Server 直呼びから provider routing 経由に変更
+- 通常ツール実行では Chrome Prompt を明示許可 + `ready` の場合にのみ候補化
+- App Server proxy の許可 path / request size / timeout を制限
+- App Server 送信前 sanitizer を配列内オブジェクトまで再帰処理
+
 ## [0.4.0] - 2026-06-09
 
 ### Added

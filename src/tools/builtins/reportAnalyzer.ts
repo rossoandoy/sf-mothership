@@ -1,6 +1,6 @@
 import type { ToolHandler, ToolResult, GuidePanelData } from '@/types/tool';
 import { ok, err } from '@/shared/result';
-import { sendAppServerChat } from '@/api/appServerClient';
+import { generateAi, getProviderDestinationLabel } from '@/api/aiProvider';
 import { buildSafeContext, sanitizePayload } from '@/runtime/appServerSafety';
 
 /**
@@ -17,7 +17,7 @@ export const reportAnalyzerHandler: ToolHandler = async (ctx) => {
 
   const objectFilter = inputs['objectFilter']?.trim() || pageContext.objectApiName || '';
 
-  const chatResult = await sendAppServerChat({
+  const chatResult = await generateAi({
     task: 'report-analyze',
     prompt: [
       'Salesforce導入現場のレポート/データ分析アシスタントとして、以下の目的に沿った分析計画とSOQL案を日本語で提示してください。',
@@ -31,6 +31,8 @@ export const reportAnalyzerHandler: ToolHandler = async (ctx) => {
       objectFilter: objectFilter || null,
       pageType: pageContext.pageType,
     }),
+    locale: 'ja-JP',
+    privacy: 'localServerAllowed',
   });
 
   if (!chatResult.ok) return err(chatResult.error);
@@ -45,6 +47,13 @@ export const reportAnalyzerHandler: ToolHandler = async (ctx) => {
       {
         heading: '分析結果 / 提案',
         items: chatResult.data.content.split('\n').filter((line) => line.trim().length > 0),
+      },
+      {
+        heading: 'AI provider',
+        items: [
+          `Provider: ${chatResult.data.provider}${chatResult.data.model ? ` (${chatResult.data.model})` : ''}`,
+          `処理先: ${getProviderDestinationLabel(chatResult.data.provider)}`,
+        ],
       },
       {
         heading: '注意',

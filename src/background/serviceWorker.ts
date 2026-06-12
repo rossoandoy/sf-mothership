@@ -7,6 +7,10 @@ import type { ExtensionMessage, PageContextBroadcastMessage, AppServerResponse }
 // Side Panel をアクションクリックで開く
 chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });
 
+const APP_SERVER_ALLOWED_PATHS = new Set(['/health', '/v1/chat']);
+const APP_SERVER_TIMEOUT_MS = 30_000;
+const APP_SERVER_MAX_BODY_BYTES = 64 * 1024;
+
 // メッセージリスナー
 chrome.runtime.onMessage.addListener(
   (message: ExtensionMessage, sender, sendResponse) => {
@@ -90,7 +94,21 @@ async function proxyAppServerRequest<T>(payload: {
     return { ok: false, error: 'App Server URL は localhost / 127.0.0.1 のみ許可されています' };
   }
 
+  if (!APP_SERVER_ALLOWED_PATHS.has(payload.path)) {
+    return { ok: false, error: `App Server path は ${Array.from(APP_SERVER_ALLOWED_PATHS).join(', ')} のみ許可されています` };
+  }
+
   const url = `${payload.baseUrl.replace(/\/$/, '')}${payload.path}`;
+  const bodyText = payload.method === 'POST' && payload.body != null
+    ? JSON.stringify(payload.body)
+    : undefined;
+
+  if (bodyText && new TextEncoder().encode(bodyText).byteLength > APP_SERVER_MAX_BODY_BYTES) {
+    return { ok: false, error: 'App Server へ送信するデータが大きすぎます' };
+  }
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), APP_SERVER_TIMEOUT_MS);
 
   try {
     const response = await fetch(url, {
@@ -98,9 +116,8 @@ async function proxyAppServerRequest<T>(payload: {
       headers: payload.method === 'POST'
         ? { 'Content-Type': 'application/json', Accept: 'application/json' }
         : { Accept: 'application/json' },
-      body: payload.method === 'POST' && payload.body != null
-        ? JSON.stringify(payload.body)
-        : undefined,
+      body: bodyText,
+      signal: controller.signal,
     });
 
     if (!response.ok) {
@@ -123,6 +140,8 @@ async function proxyAppServerRequest<T>(payload: {
       ok: false,
       error: `App Server に接続できません。サーバーが起動しているか確認してください。 (${message})`,
     };
+  } finally {
+    clearTimeout(timeoutId);
   }
 }
 

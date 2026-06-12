@@ -32,11 +32,34 @@ describe('appServerSafety', () => {
     const sanitized = sanitizePayload({
       objectName: 'Account',
       sessionId: 'secret',
-      nested: { token: 'bad', label: 'ok' },
+      authorizationToken: 'Bearer bad',
+      nested: { token: 'bad', sid: 'bad-sid', label: 'ok' },
     });
     expect(sanitized['objectName']).toBe('Account');
     expect(sanitized['sessionId']).toBeUndefined();
+    expect(sanitized['authorizationToken']).toBeUndefined();
     expect((sanitized['nested'] as Record<string, unknown>)['token']).toBeUndefined();
+    expect((sanitized['nested'] as Record<string, unknown>)['sid']).toBeUndefined();
     expect((sanitized['nested'] as Record<string, unknown>)['label']).toBe('ok');
+  });
+
+  it('配列内のオブジェクトからも禁止キーを除去する', () => {
+    const sanitized = sanitizePayload({
+      fields: [
+        { name: 'Name', token: 'bad' },
+        { label: 'Owner', password: 'bad', nested: { authorization: 'Bearer bad', type: 'reference' } },
+      ],
+    });
+
+    const fields = sanitized['fields'] as Array<Record<string, unknown>>;
+    const first = fields[0];
+    const second = fields[1];
+    expect(first).toBeDefined();
+    expect(second).toBeDefined();
+    expect(first?.['name']).toBe('Name');
+    expect(first?.['token']).toBeUndefined();
+    expect(second?.['password']).toBeUndefined();
+    expect((second?.['nested'] as Record<string, unknown>)['authorization']).toBeUndefined();
+    expect((second?.['nested'] as Record<string, unknown>)['type']).toBe('reference');
   });
 });

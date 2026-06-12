@@ -2,7 +2,7 @@ import type { ToolHandler, ToolResult, GuidePanelData } from '@/types/tool';
 import type { DescribeResult } from '@/types/salesforce';
 import { ok, err } from '@/shared/result';
 import { callApi } from '@/sidepanel/hooks/useApi';
-import { sendAppServerChat } from '@/api/appServerClient';
+import { generateAi, getProviderDestinationLabel } from '@/api/aiProvider';
 import { buildSafeContext, sanitizePayload } from '@/runtime/appServerSafety';
 import type { SoqlResponse } from '@/types/salesforce';
 import { escapeSOQL } from '@/api/soqlClient';
@@ -75,7 +75,7 @@ export const accessDiagnosticExplainerHandler: ToolHandler = async (ctx) => {
     nonUpdateableFieldsSample: nonUpdateableFields,
   };
 
-  const chatResult = await sendAppServerChat({
+  const chatResult = await generateAi({
     task: 'diagnostic-explain',
     prompt: [
       '以下のSalesforceアクセス診断サマリを、導入担当者向けに日本語で簡潔に説明してください。',
@@ -83,6 +83,8 @@ export const accessDiagnosticExplainerHandler: ToolHandler = async (ctx) => {
     ].join('\n'),
     context: buildSafeContext(pageContext, orgInfo),
     data: sanitizePayload(diagnosticSummary),
+    locale: 'ja-JP',
+    privacy: 'localServerAllowed',
   });
 
   if (!chatResult.ok) return err(chatResult.error);
@@ -101,6 +103,13 @@ export const accessDiagnosticExplainerHandler: ToolHandler = async (ctx) => {
       {
         heading: 'AI による説明',
         items: chatResult.data.content.split('\n').filter((line) => line.trim().length > 0),
+      },
+      {
+        heading: 'AI provider',
+        items: [
+          `Provider: ${chatResult.data.provider}${chatResult.data.model ? ` (${chatResult.data.model})` : ''}`,
+          `処理先: ${getProviderDestinationLabel(chatResult.data.provider)}`,
+        ],
       },
     ],
   };
