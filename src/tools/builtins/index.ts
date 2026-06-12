@@ -152,7 +152,7 @@ const toolDefinitions: Array<{ definition: ToolDefinition; handler: typeof quick
     definition: {
       id: 'tool-definition-assistant',
       title: 'ツール定義生成 (AI)',
-      description: '現在オブジェクトから Pack JSON ツール定義ドラフトを生成（App Server必須）',
+      description: '現在オブジェクトから Pack JSON ツール定義ドラフトを生成（AI Provider必須）',
       category: 'guide',
       pageMatch: ['recordPage', 'objectHome'],
       objectMatch: ['*'],
@@ -176,7 +176,7 @@ const toolDefinitions: Array<{ definition: ToolDefinition; handler: typeof quick
     definition: {
       id: 'access-diagnostic-explainer',
       title: 'アクセス診断 AI説明',
-      description: '権限診断結果を自然言語で説明（App Server必須）',
+      description: '権限診断結果を自然言語で説明（AI Provider必須）',
       category: 'diagnostic',
       pageMatch: ['recordPage', 'objectHome'],
       objectMatch: ['*'],
@@ -200,7 +200,7 @@ const toolDefinitions: Array<{ definition: ToolDefinition; handler: typeof quick
     definition: {
       id: 'report-analyzer',
       title: 'レポート分析 (AI)',
-      description: '分析目的に沿ったSOQL案・手順を提示（App Server必須）',
+      description: '分析目的に沿ったSOQL案・手順を提示（AI Provider必須）',
       category: 'guide',
       pageMatch: ['recordPage', 'objectHome', 'other'],
       objectMatch: ['*'],

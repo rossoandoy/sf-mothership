@@ -34,7 +34,7 @@ export interface SessionResponse {
   apiHostname: string;
 }
 
-// App Server リクエスト（Side Panel → Service Worker → localhost）
+// Local AI Provider リクエスト（Side Panel → Service Worker → localhost）
 export interface AppServerRequestMessage {
   type: 'APP_SERVER_REQUEST';
   payload: {

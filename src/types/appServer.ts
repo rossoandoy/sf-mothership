@@ -1,4 +1,9 @@
-/** Codex App Server 連携の型定義 */
+/** Local AI Provider / App Server 連携の型定義 */
+
+export type {
+  AiProviderMode,
+  AiProviderSettings,
+} from '@/ai/core/types';
 
 export interface AppServerSettings {
   enabled: boolean;
@@ -7,13 +12,6 @@ export interface AppServerSettings {
 
 export const DEFAULT_APP_SERVER_URL = 'http://127.0.0.1:3847';
 export const APP_SERVER_SETTINGS_KEY = 'app_server_settings';
-
-export type AiProviderMode = 'app-server-only' | 'chrome-prompt-only' | 'hybrid';
-
-export interface AiProviderSettings {
-  mode: AiProviderMode;
-  allowChromePromptInTools: boolean;
-}
 
 export const AI_PROVIDER_SETTINGS_KEY = 'ai_provider_settings';
 
@@ -33,11 +31,11 @@ export interface SafeContextPayload {
 }
 
 export interface AppServerChatRequest {
-  task: 'tool-definition' | 'diagnostic-explain' | 'report-analyze';
+  task: string;
   prompt: string;
-  context: SafeContextPayload;
+  context: unknown;
   /** 診断結果や describe サマリ等、ユーザー確認済みデータ */
-  data?: Record<string, unknown>;
+  data?: unknown;
 }
 
 export interface AppServerChatResponse {

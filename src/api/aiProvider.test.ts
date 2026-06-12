@@ -18,8 +18,8 @@ const baseRequest: AiRequest = {
 };
 
 describe('getProviderOrder', () => {
-  const appServerOnly: AiProviderSettings = {
-    mode: 'app-server-only',
+  const localOnly: AiProviderSettings = {
+    mode: 'local-only',
     allowChromePromptInTools: false,
   };
 
@@ -28,17 +28,17 @@ describe('getProviderOrder', () => {
     allowChromePromptInTools: true,
   };
 
-  it('App Server only では App Server だけを候補にする', () => {
-    const order = getProviderOrder(baseRequest, appServerOnly);
+  it('Local AI Provider only では local-http だけを候補にする', () => {
+    const order = getProviderOrder(baseRequest, localOnly);
 
-    expect(order).toEqual(['app-server']);
+    expect(order).toEqual(['local-http']);
   });
 
   it('オンデバイス限定でも Chrome Prompt が通常ツールで許可されていなければ候補なしにする', () => {
     const order = getProviderOrder({
       ...baseRequest,
       privacy: 'onDeviceOnly',
-    }, appServerOnly);
+    }, localOnly);
 
     expect(order).toEqual([]);
   });
@@ -58,16 +58,16 @@ describe('getProviderOrder', () => {
       task: 'diagnostic-explain',
     }, hybridEnabled);
 
-    expect(order).toEqual(['chrome-prompt', 'app-server']);
+    expect(order).toEqual(['chrome-prompt', 'local-http']);
   });
 
-  it('hybrid では構造化生成と重い分析は App Server を先に試す', () => {
+  it('hybrid では構造化生成と重い分析は Local AI Provider を先に試す', () => {
     expect(getProviderOrder({ ...baseRequest, task: 'tool-definition' }, hybridEnabled)).toEqual([
-      'app-server',
+      'local-http',
       'chrome-prompt',
     ]);
     expect(getProviderOrder({ ...baseRequest, task: 'report-analyze' }, hybridEnabled)).toEqual([
-      'app-server',
+      'local-http',
       'chrome-prompt',
     ]);
   });

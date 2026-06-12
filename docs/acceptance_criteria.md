@@ -113,3 +113,33 @@
 - [x] 文脈変更（recordId / objectApiName / objectHome URL）時に active tab が「今すぐ」へ戻る
 - [x] タブパネルキャッシュは 5分 TTL を持ち、error 状態を永続化しない
 - [x] objectHome/list view の URL 差分がタブパネルキャッシュキーに反映される
+
+## Chrome Extension AI Kit（v0.7.0）
+- [x] AI provider の共通型・router・provider 実装が `src/ai/` に分離されている
+- [x] Salesforce 固有 system prompt / context shaping は `src/api/aiProvider.ts` adapter 側に残っている
+- [x] `local-only` / `chrome-prompt-only` / `hybrid` の provider mode を扱える
+- [x] 旧 `app-server-only` 設定は `local-only` として後方互換で正規化される
+- [x] `onDeviceOnly` request は Chrome Prompt 以外へ流れない
+- [x] Gemini Nano / Prompt API の実装手順が個人 Agent Skill として再利用できる
+
+## Chrome AI Kit Portability（v0.8.0）
+- [x] AI 出力を `text` / `json` / `draft` の output mode で扱える
+- [x] `json` mode では JSON parse / schema validation 失敗が error になる
+- [x] `draft` mode では不正 JSON でも下書き text として扱える
+- [x] Chrome Prompt availability は raw status ではなく状態別説明文で表示される
+- [x] Local AI Provider 接続テストは URL / server stopped / CORS / HTTP error を分類して説明する
+- [x] Options から `/health` / `/v1/chat` の期待 API 仕様を確認できる
+- [x] 他Chrome拡張向け porting guide と最小サンプルが存在する
+- [x] AIツール表示条件は provider 設定の組み合わせでテストされている
+
+## Local AI Provider Starter（v0.9.0）
+- [x] `local-ai-provider/` に Node.js 標準 API の starter が存在する
+- [x] `GET /health` が `{ "status": "ok" }` を返す
+- [x] mock provider で `/v1/chat` が deterministic な応答を返す
+- [x] Ollama wrapper が `/v1/chat` request を Ollama `/api/generate` に変換できる
+- [x] Ollama 未起動時に `Ollama is not reachable` を含む error を返す
+- [x] provider 側でも 64KB body limit / path allowlist / secret-like key mask を持つ
+- [x] preflight `OPTIONS` は wildcard origin なしで必要最小限に通る
+- [x] root script `local-ai:mock` / `local-ai:ollama` で起動できる
+- [x] `node --test local-ai-provider/src/*.test.mjs` が通る
+- [x] Chrome AI Kit skill に Local Provider starter 手順がある

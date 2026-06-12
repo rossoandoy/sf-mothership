@@ -48,4 +48,16 @@ describe('aiProviderSettings', () => {
 
     await expect(getAiProviderSettings()).resolves.toEqual(DEFAULT_AI_PROVIDER_SETTINGS);
   });
+
+  it('legacy app-server-only は local-only に正規化する', async () => {
+    store.set('ai_provider_settings', {
+      mode: 'app-server-only',
+      allowChromePromptInTools: false,
+    });
+
+    await expect(getAiProviderSettings()).resolves.toEqual({
+      mode: 'local-only',
+      allowChromePromptInTools: false,
+    });
+  });
 });

@@ -1,19 +1,24 @@
 import type { AiProviderMode, AiProviderSettings } from '@/types/appServer';
 import { AI_PROVIDER_SETTINGS_KEY } from '@/types/appServer';
+import { DEFAULT_AI_PROVIDER_SETTINGS } from '@/ai/core/types';
 
-export const DEFAULT_AI_PROVIDER_SETTINGS: AiProviderSettings = {
-  mode: 'app-server-only',
-  allowChromePromptInTools: false,
-};
+export { DEFAULT_AI_PROVIDER_SETTINGS } from '@/ai/core/types';
 
 const AI_PROVIDER_MODES: AiProviderMode[] = [
-  'app-server-only',
+  'local-only',
   'chrome-prompt-only',
   'hybrid',
 ];
+const LEGACY_AI_PROVIDER_MODES = ['app-server-only'];
 
 function isAiProviderMode(value: unknown): value is AiProviderMode {
   return typeof value === 'string' && AI_PROVIDER_MODES.includes(value as AiProviderMode);
+}
+
+function normalizeMode(value: unknown): AiProviderMode | null {
+  if (isAiProviderMode(value)) return value;
+  if (LEGACY_AI_PROVIDER_MODES.includes(String(value))) return 'local-only';
+  return null;
 }
 
 function normalizeSettings(value: unknown): AiProviderSettings {
@@ -22,15 +27,16 @@ function normalizeSettings(value: unknown): AiProviderSettings {
   }
 
   const candidate = value as Partial<AiProviderSettings>;
+  const mode = normalizeMode(candidate.mode);
   if (
-    !isAiProviderMode(candidate.mode) ||
+    !mode ||
     typeof candidate.allowChromePromptInTools !== 'boolean'
   ) {
     return DEFAULT_AI_PROVIDER_SETTINGS;
   }
 
   return {
-    mode: candidate.mode,
+    mode,
     allowChromePromptInTools: candidate.allowChromePromptInTools,
   };
 }

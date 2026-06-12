@@ -1,20 +1,20 @@
-# Gemini Nano / Codex App Server 比較検討
+# Gemini Nano / Local AI Provider 比較検討
 
 SF Mothership の AI 機能は、3タブの中核体験を置き換えるものではなく、診断説明・ツール定義生成・レポート分析を補助する任意機能として扱う。
 
-対象リリース: v0.5.0
+対象リリース: v0.5.0〜v0.7.0
 
 ## 結論
 
-- 短期: 現行 Codex App Server をオプトインの補助機能として継続する。
+- 短期: 現行 Codex App Server 互換 endpoint を Local AI Provider としてオプトイン継続する。
 - 中期: Chrome Built-in AI Prompt API（Gemini Nano）を provider として追加し、用途別に routing する。
-- 長期: deterministic core + optional AI providers とし、AI の可用性に依存しない UX を保つ。
+- 長期: deterministic core + reusable Chrome Extension AI Kit + optional AI providers とし、AI の可用性に依存しない UX を保つ。
 
 ## 比較
 
 | 候補 | 強み | リスク | 判断 |
 |------|------|--------|------|
-| Codex App Server | 日本語品質、構造化出力、重い分析に強い | localhost サーバ起動が必要。送信境界の説明が必要 | 短期継続 |
+| Local AI Provider | 日本語品質、構造化出力、重い分析に強い。Codex App Server / Ollama wrapper 等を差し替え可能 | localhost サーバ起動が必要。送信境界の説明が必要 | オプトイン継続 |
 | Gemini Nano / Prompt API | オンデバイス、初回DL後オフライン、データ外部送信なし | Chrome/端末/モデルDL制約。Service Worker で直接使えない | PoC 対象 |
 | ハイブリッド | 用途別に最適 provider を選べる | 抽象化しないと複雑化 | 中期推奨 |
 | AI 後回し | 導入摩擦が低い | AI 補助の差別化が出ない | fallback 方針 |
@@ -33,19 +33,40 @@ Prompt API は `LanguageModel.availability()` で利用可否を確認し、`Lan
 
 ## SF Mothership での方針
 
-AI ツールは `sendAppServerChat()` を直接呼ばず、`generateAi()` 経由にする。`generateAi()` は task と privacy に応じて provider を選ぶ。
+AI ツールはローカル HTTP 実装を直接呼ばず、`generateAi()` 経由にする。`generateAi()` は task と privacy に応じて provider を選ぶ。
 
 | task | 優先 provider | 理由 |
 |------|---------------|------|
-| `diagnostic-explain` | Chrome Prompt → App Server | 短い日本語説明はオンデバイス PoC に向く |
-| `tool-definition` | App Server → Chrome Prompt | JSON 生成と Salesforce 文脈の厳密性が重要 |
-| `report-analyze` | App Server → Chrome Prompt | 分析計画・SOQL案は高品質モデルが有利 |
+| `diagnostic-explain` | Chrome Prompt → Local AI Provider | 短い日本語説明はオンデバイス PoC に向く |
+| `tool-definition` | Local AI Provider → Chrome Prompt | JSON 生成と Salesforce 文脈の厳密性が重要 |
+| `report-analyze` | Local AI Provider → Chrome Prompt | 分析計画・SOQL案は高品質モデルが有利 |
 
-`privacy: onDeviceOnly` の場合は Chrome Prompt だけを候補にし、App Server へは送らない。
+`privacy: onDeviceOnly` の場合は Chrome Prompt だけを候補にし、Local AI Provider へは送らない。
+
+## 共通基盤化（v0.7.0）
+
+AI 実行基盤は `src/ai/` に分離する。
+
+```text
+src/ai/
+├── core/
+│   ├── types.ts
+│   └── router.ts
+└── providers/
+    ├── chromePromptProvider.ts
+    └── localHttpProvider.ts
+```
+
+- `src/ai/core`: provider interface、routing、privacy 境界を持つ。
+- `src/ai/providers`: Chrome Prompt と localhost HTTP provider の実装だけを持つ。
+- `src/api/aiProvider.ts`: SF Mothership 向け adapter。Salesforce 固有 system prompt をここで注入する。
+- `~/.cursor/skills/chrome-extension-ai-kit`: 他の Chrome 拡張へ移植するための個人 Agent Skill。
+
+共通 provider は Salesforce の `PageContext`、SOQL、Describe、session sanitizer を知らない。各拡張は domain adapter で安全な payload を作り、共通 router に渡す。
 
 ## セキュリティ境界
 
-- App Server は明示オプトイン時のみ利用する。
+- Local AI Provider は明示オプトイン時のみ利用する。
 - Service Worker proxy は localhost / 127.0.0.1 のみ許可する。
 - 許可 path は `/health` と `/v1/chat` に限定する。
 - request size と timeout を設ける。
@@ -56,7 +77,7 @@ AI ツールは `sendAppServerChat()` を直接呼ばず、`generateAi()` 経由
 1. Options で `LanguageModel.availability()` が status を返す。
 2. `downloadable` / `downloading` 時に UI が案内を出せる。
 3. ユーザー操作から `LanguageModel.create()` と短い日本語 prompt が動く。
-4. Gemini unavailable 時に App Server fallback が説明つきで働く。
+4. Gemini unavailable 時に Local AI Provider fallback が説明つきで働く。
 5. アクセス診断説明の日本語品質を実データ 20 ケースで確認する。
 6. ツール定義 JSON の parse / schema validation 成功率を測る。
 
@@ -84,8 +105,10 @@ Options 画面では以下の3モードを選べる。
 
 | mode | 用途 |
 |------|------|
-| `app-server-only` | デフォルト。既存の Codex App Server のみ使う |
-| `chrome-prompt-only` | オンデバイス限定検証。App Server へ fallback しない |
-| `hybrid` | Chrome Prompt が ready の場合だけ使い、それ以外は App Server へ fallback |
+| `local-only` | デフォルト。localhost の Local AI Provider のみ使う |
+| `chrome-prompt-only` | オンデバイス限定検証。Local AI Provider へ fallback しない |
+| `hybrid` | Chrome Prompt が ready の場合だけ使い、それ以外は Local AI Provider へ fallback |
 
 `allowChromePromptInTools` が false の場合、通常の AI 補助ツールは Chrome Prompt を候補にしない。Chrome Prompt のモデル作成は Options の PoC ボタンからだけ試す。
+
+旧 `app-server-only` 設定は `local-only` として正規化する。

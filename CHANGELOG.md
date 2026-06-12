@@ -7,6 +7,54 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/ja/).
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-06-12
+
+### Added
+
+- `local-ai-provider/` starter（Node標準APIのみ）を同梱
+- mock provider による deterministic な `/v1/chat` 応答
+- Ollama wrapper（`/v1/chat` → Ollama `/api/generate`）と `OLLAMA_MODEL` / `OLLAMA_BASE_URL` 設定
+- Local AI Provider starter の node:test（health / chat / body limit / 404 / CORS / sanitizer）
+- Chrome AI Kit skill の Local AI Provider starter reference
+
+### Changed
+
+- README / Local AI Provider docs に mock / Ollama 起動手順を追加
+- root scripts に `local-ai:mock` / `local-ai:ollama` を追加
+
+### Security
+
+- provider 側にも 64KB body limit、path allowlist、secret-like key mask、最小 CORS を追加
+
+## [0.8.0] - 2026-06-12
+
+### Added
+
+- AI Kit の `outputMode`（text / json / draft）と schema-safe output 後処理
+- Chrome Prompt availability の状態別ユーザー向け説明
+- Local AI Provider onboarding docs と Options 上の API 仕様表示
+- 他Chrome拡張向け porting guide と最小サンプル
+- AI ツール表示条件の設定組み合わせテスト
+
+### Changed
+
+- `responseSchema` 付き AI 出力は JSON parse / schema validation 失敗時に error として扱う
+- Local AI Provider 接続テストの失敗理由を URL / server stopped / CORS / HTTP error に分類
+
+## [0.7.0] - 2026-06-12
+
+### Added
+
+- Chrome拡張AI化の共通実行基盤 `src/ai/core` / `src/ai/providers`
+- 個人 Agent Skill `~/.cursor/skills/chrome-extension-ai-kit`
+- Gemini Nano / Local AI Provider を切り替える AI tool availability 判定
+
+### Changed
+
+- AI provider 実装を Salesforce adapter と共通 provider に分離
+- `App Server only` を `Local AI Provider only` へ正規化し、旧 `app-server-only` 設定を後方互換で受け入れ
+- Options / docs の AI 表現を Codex App Server 固定から Local AI Provider 中心に変更
+
 ## [0.6.0] - 2026-06-12
 
 ### Added

@@ -9,7 +9,7 @@ import type { AppServerRequestMessage, AppServerResponse } from '@/types/message
 import { getAppServerSettings } from './appServerSettings';
 
 /**
- * Service Worker 経由でローカル App Server にリクエスト
+ * Service Worker 経由でローカル AI Provider にリクエスト
  */
 async function sendAppServerMessage<T>(
   path: string,
@@ -19,7 +19,7 @@ async function sendAppServerMessage<T>(
   const settings = await getAppServerSettings();
 
   if (!settings.enabled) {
-    return err('App Server が無効です。Options画面で有効化してください。');
+    return err('Local AI Provider が無効です。Options画面で有効化してください。');
   }
 
   const message: AppServerRequestMessage = {
@@ -40,7 +40,7 @@ async function sendAppServerMessage<T>(
     return ok(response.data);
   } catch (e: unknown) {
     const message = e instanceof Error ? e.message : '不明なエラー';
-    return err(`App Server 通信失敗: ${message}`);
+    return err(`Local AI Provider 通信失敗: ${message}`);
   }
 }
 

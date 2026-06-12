@@ -65,24 +65,25 @@ export function getAvailableTools(
 }
 
 export interface DrawerToolsOptions {
+  aiToolsEnabled?: boolean;
   appServerEnabled?: boolean;
 }
 
 /**
  * 「もっと見る」ドロワー用ツール一覧
- * タブ配線済みツールを除外し、AI は App Server 有効時のみ
+ * タブ配線済みツールを除外し、AI は利用可能な provider がある時のみ表示
  */
 export function getDrawerTools(
   context: PageContext,
   orgInfo: OrgInfo | null,
   options: DrawerToolsOptions = {}
 ): ToolDefinition[] {
-  const { appServerEnabled = false } = options;
+  const aiToolsEnabled = options.aiToolsEnabled ?? options.appServerEnabled ?? false;
 
   return getAvailableTools(context, orgInfo).filter((definition) => {
     if (TAB_TOOL_IDS.has(definition.id)) return false;
 
-    if (definition.projectTags.includes('ai') && !appServerEnabled) {
+    if (definition.projectTags.includes('ai') && !aiToolsEnabled) {
       return false;
     }
 

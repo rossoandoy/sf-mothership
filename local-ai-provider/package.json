@@ -1,0 +1,13 @@
+{
+  "name": "@sf-mothership/local-ai-provider",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Local AI Provider starter for SF Mothership and Chrome AI Kit",
+  "scripts": {
+    "start": "node src/server.mjs",
+    "start:mock": "LOCAL_AI_PROVIDER=mock node src/server.mjs",
+    "start:ollama": "LOCAL_AI_PROVIDER=ollama node src/server.mjs",
+    "test": "node --test src/*.test.mjs"
+  }
+}

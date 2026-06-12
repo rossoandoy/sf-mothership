@@ -1,6 +1,6 @@
 # SF Mothership 現状棚卸し
 
-最終更新: 2026-06-12（v0.6.0）
+最終更新: 2026-06-12（v0.9.0）
 
 ## バージョン参照箇所
 
@@ -27,6 +27,9 @@
 - App Server proxy hardening（path allowlist / timeout / request size）
 - App Server 送信前 sanitizer の深い再帰処理
 - Side Panel UX hardening（v0.6.0: 部分表示 / 状態別 stale バナー / active tab reset / cache TTL）
+- Chrome Extension AI Kit 境界（`src/ai/core` / `src/ai/providers`）と個人 Agent Skill
+- Chrome AI Kit portability（schema-safe output / availability説明 / Local AI Provider onboarding / porting guide）
+- Local AI Provider starter（`local-ai-provider/`: mock / Ollama wrapper / safety / node:test）
 
 ## 未達だった Acceptance（v0.2.0 で対応）
 
@@ -40,12 +43,16 @@
 - [x] Codex App Server 連携（オプトイン）
 - [x] AI 補助ツール 3本
 
-## Codex / App Server
+## AI Provider / Local AI Provider
 
 - v0.2.0 より localhost への通信を **ユーザー明示オプトイン** で許可
 - デフォルトは Salesforce のみ通信（README / safety ルール準拠）
 - sessionId や生レコードデータの外部送信は禁止
 - v0.5.0 より AI provider mode（App Server only / Chrome Prompt only / Hybrid）を Options で明示設定
+- v0.7.0 より `local-only` / `chrome-prompt-only` / `hybrid` へ正規化し、旧 `app-server-only` は後方互換で受け入れ
+- v0.8.0 より AI output mode（text / json / draft）と schema-safe output を導入
+- v0.8.0 より Local AI Provider 接続失敗理由を分類して Options に表示
+- v0.9.0 より無料ローカル実行の starter を同梱し、`npm run local-ai:mock` / `npm run local-ai:ollama` で起動可能
 - Chrome Built-in AI / Gemini Nano は Options 画面の PoC ボタンで availability / smoke prompt を明示実行
 
 ## UX 改善状況（v0.6.0、ux-review-v0.4 より）
@@ -56,11 +63,11 @@
 - [x] キャッシュ TTL / error 非永続化
 - objectHome 専用 Instant レイアウト
 
-## 今後の拡張候補（v0.7.0 以降）
+## 今後の拡張候補（v0.9.0 以降）
 
 - objectHome 専用 Instant レイアウト
 - cache stale-while-revalidate
-- Codex App Server 本体の同梱
+- LM Studio wrapper の追加
 - report-assistant 本格化（実データ集計）
 - Service Worker 経由の Salesforce API プロキシ統一
 - Tooling API クライアント

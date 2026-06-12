@@ -9,7 +9,7 @@ import { ToolPanel } from './components/ToolPanel';
 import { getDrawerTools } from '@/runtime/toolRegistry';
 import { registerBuiltinTools } from '@/tools/builtins';
 import { usePack } from './hooks/usePack';
-import { useAppServerEnabled } from './hooks/useAppServerEnabled';
+import { useAiToolsEnabled } from './hooks/useAiToolsEnabled';
 import { APP_VERSION } from '@/shared/version';
 import type { ContextTabId } from '@/shared/tabTools';
 import { useExtensionStatus } from './hooks/useExtensionStale';
@@ -24,7 +24,7 @@ export function App() {
   const extensionStatus = useExtensionStatus(context, pageContextState.error);
   const orgInfo = useOrgInfo(context);
   const activePackId = usePack();
-  const appServerEnabled = useAppServerEnabled();
+  const aiToolsEnabled = useAiToolsEnabled();
   const [activeTab, setActiveTab] = useState<ContextTabId>('instant');
   const [drawerOpen, setDrawerOpen] = useState(false);
   const previousContextIdentityRef = useRef<string | null>(null);
@@ -36,8 +36,8 @@ export function App() {
 
   const drawerTools = useMemo(() => {
     if (!context) return [];
-    return getDrawerTools(context, orgInfo, { appServerEnabled });
-  }, [context, orgInfo, appServerEnabled]);
+    return getDrawerTools(context, orgInfo, { aiToolsEnabled });
+  }, [context, orgInfo, aiToolsEnabled]);
 
   const inToolFlow = state.phase !== 'idle';
   const contextIdentity = useMemo(() => buildContextIdentity(context), [context]);

@@ -1,105 +1,67 @@
 import type { Result } from '@/shared/result';
-import { err } from '@/shared/result';
-import type { AiProviderSettings, SafeContextPayload } from '@/types/appServer';
-import { appServerAiProvider } from './appServerAiProvider';
-import { chromeBuiltInAiProvider } from './chromeBuiltInAiProvider';
+import { getProviderOrder as getCoreProviderOrder, generateAiWithProviders } from '@/ai/core/router';
+import type {
+  AiAvailability,
+  AiAvailabilityStatus,
+  AiPrivacy,
+  AiProvider,
+  AiProviderId,
+  AiProviderSettings,
+  AiRequest,
+  AiResponse,
+  AiTask,
+} from '@/ai/core/types';
+import { chromePromptProvider } from '@/ai/providers/chromePromptProvider';
+import { localHttpProvider } from '@/ai/providers/localHttpProvider';
 import { DEFAULT_AI_PROVIDER_SETTINGS, getAiProviderSettings } from './aiProviderSettings';
 
-export type AiTask = 'tool-definition' | 'diagnostic-explain' | 'report-analyze';
-export type AiProviderId = 'chrome-prompt' | 'app-server';
-export type AiPrivacy = 'onDeviceOnly' | 'localServerAllowed';
-export type AiAvailabilityStatus = 'ready' | 'downloadable' | 'downloading' | 'unavailable';
+export type {
+  AiAvailability,
+  AiAvailabilityStatus,
+  AiPrivacy,
+  AiProvider,
+  AiProviderId,
+  AiProviderSettings,
+  AiRequest,
+  AiResponse,
+  AiTask,
+};
 
-export interface AiAvailability {
-  status: AiAvailabilityStatus;
-  reason?: string;
-}
-
-export interface AiRequest {
-  task: AiTask;
-  prompt: string;
-  context: SafeContextPayload;
-  data?: Record<string, unknown>;
-  locale: 'ja-JP' | 'en-US';
-  privacy: AiPrivacy;
-  responseSchema?: unknown;
-}
-
-export interface AiResponse<T = unknown> {
-  content: string;
-  parsed?: T;
-  provider: AiProviderId;
-  model?: string;
-  warnings?: string[];
-}
-
-export interface AiProvider {
-  id: AiProviderId;
-  availability(request: AiRequest): Promise<AiAvailability>;
-  complete<T = unknown>(request: AiRequest): Promise<Result<AiResponse<T>>>;
-}
+const SALESFORCE_SYSTEM_PROMPT = [
+  'あなたはSalesforce導入支援Chrome拡張 SF Mothership の補助AIです。',
+  '日本語で簡潔に答えてください。',
+  'Salesforceの設定変更やデータ更新は、ユーザー確認なしに実行できるかのように説明しないでください。',
+  'sessionId、token、password、authorization などの機密情報を要求・出力しないでください。',
+].join('\n');
 
 const PROVIDERS: Record<AiProviderId, AiProvider> = {
-  'chrome-prompt': chromeBuiltInAiProvider,
-  'app-server': appServerAiProvider,
+  'chrome-prompt': chromePromptProvider,
+  'local-http': localHttpProvider,
 };
+
+function withSalesforceDefaults(request: AiRequest): AiRequest {
+  return {
+    ...request,
+    systemPrompt: request.systemPrompt ?? SALESFORCE_SYSTEM_PROMPT,
+  };
+}
 
 export function getProviderOrder(
   request: AiRequest,
   settings: AiProviderSettings = DEFAULT_AI_PROVIDER_SETTINGS
 ): AiProviderId[] {
-  let order: AiProviderId[];
-
-  if (settings.mode === 'app-server-only') {
-    order = request.privacy === 'onDeviceOnly' ? [] : ['app-server'];
-  } else if (settings.mode === 'chrome-prompt-only') {
-    order = ['chrome-prompt'];
-  } else if (request.privacy === 'onDeviceOnly') {
-    order = ['chrome-prompt'];
-  } else if (request.task === 'diagnostic-explain') {
-    order = ['chrome-prompt', 'app-server'];
-  } else {
-    order = ['app-server', 'chrome-prompt'];
-  }
-
-  if (!settings.allowChromePromptInTools) {
-    order = order.filter((providerId) => providerId !== 'chrome-prompt');
-  }
-
-  if (request.privacy === 'onDeviceOnly') {
-    return order.filter((providerId) => providerId === 'chrome-prompt');
-  }
-
-  return order;
+  return getCoreProviderOrder(request, settings);
 }
 
 export async function generateAi<T = unknown>(
   request: AiRequest
 ): Promise<Result<AiResponse<T>>> {
-  const errors: string[] = [];
   const settings = await getAiProviderSettings();
-
-  for (const providerId of getProviderOrder(request, settings)) {
-    const provider = PROVIDERS[providerId];
-    const availability = await provider.availability(request);
-
-    if (availability.status !== 'ready') {
-      errors.push(`${providerId}: ${availability.reason ?? '利用できません'}`);
-      continue;
-    }
-
-    const result = await provider.complete<T>(request);
-    if (result.ok) {
-      return result;
-    }
-    errors.push(`${providerId}: ${result.error}`);
-  }
-
-  return err(errors.length > 0 ? errors.join(' / ') : 'AI provider を利用できません');
+  return generateAiWithProviders<T>(withSalesforceDefaults(request), PROVIDERS, settings);
 }
 
 export async function checkChromePromptAvailability(): Promise<AiAvailability> {
-  return chromeBuiltInAiProvider.availability({
+  return chromePromptProvider.availability(withSalesforceDefaults({
     task: 'diagnostic-explain',
     prompt: '',
     context: {
@@ -111,11 +73,11 @@ export async function checkChromePromptAvailability(): Promise<AiAvailability> {
     },
     locale: 'ja-JP',
     privacy: 'onDeviceOnly',
-  });
+  }));
 }
 
 export async function runChromePromptSmokeTest(): Promise<Result<AiResponse>> {
-  return chromeBuiltInAiProvider.complete({
+  return chromePromptProvider.complete(withSalesforceDefaults({
     task: 'diagnostic-explain',
     prompt: 'SF Mothership の Chrome Built-in AI PoC として、日本語で短く「利用可能です」と返してください。',
     context: {
@@ -127,11 +89,11 @@ export async function runChromePromptSmokeTest(): Promise<Result<AiResponse>> {
     },
     locale: 'ja-JP',
     privacy: 'onDeviceOnly',
-  });
+  }));
 }
 
-export function getProviderDestinationLabel(providerId: AiProviderId): string {
+export function getProviderDestinationLabel(providerId: AiProviderId | 'app-server'): string {
   return providerId === 'chrome-prompt'
     ? 'オンデバイス処理'
-    : 'localhost App Server';
+    : 'localhost Local AI Provider';
 }

@@ -5,7 +5,7 @@ import type { SafeContextPayload } from '@/types/appServer';
 const FORBIDDEN_KEYS = ['sessionId', 'sid', 'password', 'token', 'authorization'];
 
 /**
- * App Server へ送信可能な最小コンテキストを構築する。
+ * Local AI Provider へ送信可能な最小コンテキストを構築する。
  * sessionId 等の機密情報は含めない。
  */
 export function buildSafeContext(

@@ -11,6 +11,8 @@ import {
   getAiProviderSettings,
   setAiProviderSettings,
 } from '@/api/aiProviderSettings';
+import { describeChromePromptAvailability } from '@/ai/providers/chromePromptAvailability';
+import { describeLocalProviderHealthResult } from '@/ai/providers/localProviderDiagnostics';
 import { DEFAULT_APP_SERVER_URL } from '@/types/appServer';
 import type { AiProviderMode, AiProviderSettings, AppServerSettings } from '@/types/appServer';
 import { APP_VERSION } from '@/shared/version';
@@ -21,19 +23,19 @@ const AI_PROVIDER_OPTIONS: Array<{
   description: string;
 }> = [
   {
-    mode: 'app-server-only',
-    label: 'App Server only（推奨）',
-    description: '既存の安定モード。Chrome Prompt は PoC ボタン以外では使いません。',
+    mode: 'local-only',
+    label: 'Local AI Provider only（推奨）',
+    description: 'localhost の任意AIサーバーを使う安定モード。Chrome Prompt は PoC ボタン以外では使いません。',
   },
   {
     mode: 'chrome-prompt-only',
     label: 'Chrome Prompt only（PoC）',
-    description: 'オンデバイス限定検証。App Server へ fallback しません。',
+    description: 'オンデバイス限定検証。Local AI Provider へ fallback しません。',
   },
   {
     mode: 'hybrid',
     label: 'Hybrid（実験）',
-    description: 'Chrome Prompt が ready のときだけ短い診断説明に使い、それ以外は App Server へ fallback します。',
+    description: 'Chrome Prompt が ready のときだけ短い診断説明に使い、それ以外は Local AI Provider へ fallback します。',
   },
 ];
 
@@ -84,7 +86,12 @@ export function Options() {
     setHealthStatus(null);
     await setAppServerSettings(appServer);
     const result = await checkAppServerHealth();
-    setHealthStatus(result.ok ? `接続OK (${result.data.status})` : result.error);
+    const description = describeLocalProviderHealthResult(result);
+    setHealthStatus(
+      description.ok
+        ? description.message
+        : `${description.message}\n詳細: ${description.detail}`
+    );
     setCheckingHealth(false);
   };
 
@@ -92,11 +99,11 @@ export function Options() {
     setCheckingChromeAi(true);
     setChromeAiStatus(null);
     const availability = await checkChromePromptAvailability();
-    setChromeAiStatus(
-      availability.reason
-        ? `${availability.status}: ${availability.reason}`
-        : availability.status
-    );
+    const description = describeChromePromptAvailability(availability);
+    setChromeAiStatus([
+      `${description.title}: ${description.message}`,
+      description.detail ? `詳細: ${description.detail}` : '',
+    ].filter(Boolean).join('\n'));
     setCheckingChromeAi(false);
   };
 
@@ -168,7 +175,7 @@ export function Options() {
       <section className="bg-white border border-gray-200 rounded-lg p-6 mb-6">
         <h2 className="text-lg font-semibold text-gray-800 mb-4">AI Provider 設定</h2>
         <p className="text-sm text-gray-500 mb-4">
-          AI補助ツールの実行先を明示的に選びます。通常は App Server only のまま使ってください。
+          AI補助ツールの実行先を明示的に選びます。通常は Local AI Provider only のまま使ってください。
         </p>
         <div className="space-y-2 mb-4">
           {AI_PROVIDER_OPTIONS.map((option) => (
@@ -223,20 +230,31 @@ export function Options() {
         </button>
       </section>
 
-      {/* App Server 設定 */}
+      {/* Local AI Provider 設定 */}
       <section className="bg-white border border-gray-200 rounded-lg p-6 mb-6">
-        <h2 className="text-lg font-semibold text-gray-800 mb-4">Codex App Server（オプトイン）</h2>
+        <h2 className="text-lg font-semibold text-gray-800 mb-4">Local AI Provider（オプトイン）</h2>
         <p className="text-sm text-gray-500 mb-4">
-          ローカルの Codex App Server に接続して AI 補助ツールを使用します。
+          ローカルの AI サーバー（Codex App Server / Ollama互換ラッパー等）に接続して AI 補助ツールを使用します。
           デフォルトでは無効です。sessionId 等の機密情報は送信しません。
         </p>
+        <details className="mb-4 text-xs text-gray-600">
+          <summary className="cursor-pointer font-medium text-gray-700">Local AI Provider API仕様</summary>
+          <div className="mt-2 space-y-2 bg-gray-50 border border-gray-200 rounded p-3">
+            <p><code>GET /health</code> → <code>{'{ "status": "ok" }'}</code></p>
+            <p><code>POST /v1/chat</code> → <code>{'{ "content": "..." }'}</code></p>
+            <p>
+              Base URL は <code>localhost</code> または <code>127.0.0.1</code> のみ許可します。
+              Ollama / LM Studio を使う場合は、この API に合わせる薄い wrapper を用意してください。
+            </p>
+          </div>
+        </details>
         <label className="flex items-center gap-2 mb-4">
           <input
             type="checkbox"
             checked={appServer.enabled}
             onChange={(e) => setAppServer({ ...appServer, enabled: e.target.checked })}
           />
-          <span className="text-sm text-gray-700">App Server 連携を有効化</span>
+          <span className="text-sm text-gray-700">Local AI Provider 連携を有効化</span>
         </label>
         <div className="mb-4">
           <label className="block text-sm text-gray-600 mb-1">Base URL</label>
@@ -265,7 +283,7 @@ export function Options() {
           </button>
         </div>
         {healthStatus && (
-          <p className={`text-xs mt-3 ${healthStatus.startsWith('接続OK') ? 'text-green-600' : 'text-red-600'}`}>
+          <p className={`text-xs mt-3 whitespace-pre-line ${healthStatus.startsWith('接続OK') ? 'text-green-600' : 'text-red-600'}`}>
             {healthStatus}
           </p>
         )}

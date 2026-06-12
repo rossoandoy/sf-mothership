@@ -81,7 +81,7 @@ chrome.tabs.onActivated.addListener((activeInfo) => {
 });
 
 /**
- * ローカル App Server へのプロキシ（CORS 回避）
+ * ローカル AI Provider へのプロキシ（CORS 回避）
  * localhost / 127.0.0.1 のみ許可
  */
 async function proxyAppServerRequest<T>(payload: {
@@ -91,11 +91,11 @@ async function proxyAppServerRequest<T>(payload: {
   body?: unknown;
 }): Promise<AppServerResponse<T>> {
   if (!isLocalhostUrl(payload.baseUrl)) {
-    return { ok: false, error: 'App Server URL は localhost / 127.0.0.1 のみ許可されています' };
+    return { ok: false, error: 'Local AI Provider URL は localhost / 127.0.0.1 のみ許可されています' };
   }
 
   if (!APP_SERVER_ALLOWED_PATHS.has(payload.path)) {
-    return { ok: false, error: `App Server path は ${Array.from(APP_SERVER_ALLOWED_PATHS).join(', ')} のみ許可されています` };
+    return { ok: false, error: `Local AI Provider path は ${Array.from(APP_SERVER_ALLOWED_PATHS).join(', ')} のみ許可されています` };
   }
 
   const url = `${payload.baseUrl.replace(/\/$/, '')}${payload.path}`;
@@ -104,7 +104,7 @@ async function proxyAppServerRequest<T>(payload: {
     : undefined;
 
   if (bodyText && new TextEncoder().encode(bodyText).byteLength > APP_SERVER_MAX_BODY_BYTES) {
-    return { ok: false, error: 'App Server へ送信するデータが大きすぎます' };
+    return { ok: false, error: 'Local AI Provider へ送信するデータが大きすぎます' };
   }
 
   const controller = new AbortController();
@@ -128,17 +128,17 @@ async function proxyAppServerRequest<T>(payload: {
       } catch {
         detail = response.statusText;
       }
-      return { ok: false, error: `App Server エラー (HTTP ${response.status}): ${detail}` };
+      return { ok: false, error: `Local AI Provider エラー (HTTP ${response.status}): ${detail}` };
     }
 
     const data = await response.json() as T;
     return { ok: true, data };
   } catch (e: unknown) {
     const message = e instanceof Error ? e.message : '不明なエラー';
-    logger.warn('App Server プロキシ失敗', { url, error: message });
+    logger.warn('Local AI Provider プロキシ失敗', { url, error: message });
     return {
       ok: false,
-      error: `App Server に接続できません。サーバーが起動しているか確認してください。 (${message})`,
+      error: `Local AI Provider に接続できません。サーバーが起動しているか確認してください。 (${message})`,
     };
   } finally {
     clearTimeout(timeoutId);

@@ -5,7 +5,7 @@ import { buildSafeContext, sanitizePayload } from '@/runtime/appServerSafety';
 
 /**
  * report-assistant 型のレポート/集計分析ツール
- * 長時間処理はローカル App Server に委譲
+ * 長時間処理はローカル AI Provider に委譲
  */
 export const reportAnalyzerHandler: ToolHandler = async (ctx) => {
   const { pageContext, orgInfo, inputs } = ctx;
@@ -59,7 +59,7 @@ export const reportAnalyzerHandler: ToolHandler = async (ctx) => {
         heading: '注意',
         items: [
           '本ツールは分析計画の提示です。実データの取得はSalesforce上で手動確認してください',
-          '大量データの集計は App Server 側で実行する想定です（将来拡張）',
+          '大量データの集計は Local AI Provider 側で実行する想定です（将来拡張）',
         ],
       },
     ],

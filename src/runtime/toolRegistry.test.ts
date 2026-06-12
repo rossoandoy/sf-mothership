@@ -60,14 +60,14 @@ describe('getDrawerTools', () => {
     expect(drawer.map((t) => t.id)).toEqual(['test-data-creator']);
   });
 
-  it('App Server 無効時は AI ツールを除外する', () => {
+  it('AI provider 無効時は AI ツールを除外する', () => {
     registerTool(makeTool({ id: 'tool-definition-assistant', projectTags: ['ai'] }), noopHandler);
     registerTool(makeTool({ id: 'report-analyzer', projectTags: ['ai'] }), noopHandler);
 
-    const withoutServer = getDrawerTools(context, orgInfo, { appServerEnabled: false });
-    expect(withoutServer).toHaveLength(0);
+    const withoutAi = getDrawerTools(context, orgInfo, { aiToolsEnabled: false });
+    expect(withoutAi).toHaveLength(0);
 
-    const withServer = getDrawerTools(context, orgInfo, { appServerEnabled: true });
-    expect(withServer).toHaveLength(2);
+    const withAi = getDrawerTools(context, orgInfo, { aiToolsEnabled: true });
+    expect(withAi).toHaveLength(2);
   });
 });
