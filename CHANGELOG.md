@@ -7,6 +7,49 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/ja/).
 
 ## [Unreleased]
 
+## [0.12.0] - 2026-06-14
+
+### Added
+
+- Salesforce API Service Worker proxy（`SALESFORCE_API_REQUEST`）
+- Service Worker 側 Salesforce API dispatcher と unit test
+- Side Panel `callApi()` の runtime message proxy test
+
+### Changed
+
+- Side Panel からの Salesforce REST API 直接 fetch を廃止し、Service Worker 経由に統一
+- UI 側へ `sessionId` / `apiHostname` を返さず、Service Worker 内で session を扱う構造へ変更
+- README / status / acceptance / safety rule に Salesforce API proxy 境界を追記
+
+## [0.11.0] - 2026-06-13
+
+### Added
+
+- レポート分析 (AI) の read-only 集計スナップショット（総件数 / 直近件数 / 分布）
+- 集計スナップショット helper と collector の unit test
+- レポート分析 handler test（snapshot payload / unsafe object API name / warning 表示）
+- レポート分析の集計期間入力（直近7日 / 30日 / 90日）
+
+### Changed
+
+- レポート分析 AI の prompt に集計スナップショット根拠を追加
+- レポート分析結果に `集計スナップショット` / `実行した SOQL` / `集計 warnings` を表示
+- README / Local AI Provider docs に「AIへ送るのは集計値とSOQLのみ」と明記
+
+## [0.10.0] - 2026-06-13
+
+### Added
+
+- Options 画面に Local AI Provider 専用の `/v1/chat` Smoke prompt を追加
+- `local-ai:smoke` CLI による起動済み provider の `/health` + `/v1/chat` 検証
+- Local AI Provider smoke helper と unit test
+- CLI smoke logic の node:test
+
+### Changed
+
+- README / Local AI Provider docs / Chrome AI Kit skill に mock → CLI smoke → Options smoke の確認手順を追加
+- Local smoke payload が Salesforce session / token / record data を含まないことを明文化
+
 ## [0.9.0] - 2026-06-12
 
 ### Added

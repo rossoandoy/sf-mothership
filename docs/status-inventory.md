@@ -1,6 +1,6 @@
 # SF Mothership 現状棚卸し
 
-最終更新: 2026-06-12（v0.9.0）
+最終更新: 2026-06-13（v0.11.0）
 
 ## バージョン参照箇所
 
@@ -30,6 +30,9 @@
 - Chrome Extension AI Kit 境界（`src/ai/core` / `src/ai/providers`）と個人 Agent Skill
 - Chrome AI Kit portability（schema-safe output / availability説明 / Local AI Provider onboarding / porting guide）
 - Local AI Provider starter（`local-ai-provider/`: mock / Ollama wrapper / safety / node:test）
+- Local AI Provider E2E smoke（Options `/v1/chat` smoke / `local-ai:smoke` CLI）
+- Report Analyzer data snapshot（COUNT / GROUP BY の read-only 集計を AI に渡す）
+- Salesforce API Service Worker proxy（UI側へ sessionId を返さず REST API 呼び出しを集約）
 
 ## 未達だった Acceptance（v0.2.0 で対応）
 
@@ -53,6 +56,9 @@
 - v0.8.0 より AI output mode（text / json / draft）と schema-safe output を導入
 - v0.8.0 より Local AI Provider 接続失敗理由を分類して Options に表示
 - v0.9.0 より無料ローカル実行の starter を同梱し、`npm run local-ai:mock` / `npm run local-ai:ollama` で起動可能
+- v0.10.0 より `npm run local-ai:smoke` と Options の Local Smoke prompt で `/v1/chat` まで確認可能
+- v0.11.0 よりレポート分析 AI は生レコードではなく集計値と SOQL のスナップショットを利用
+- v0.12.0 より Salesforce REST API 呼び出しを Service Worker proxy 経由に統一
 - Chrome Built-in AI / Gemini Nano は Options 画面の PoC ボタンで availability / smoke prompt を明示実行
 
 ## UX 改善状況（v0.6.0、ux-review-v0.4 より）
@@ -63,13 +69,11 @@
 - [x] キャッシュ TTL / error 非永続化
 - objectHome 専用 Instant レイアウト
 
-## 今後の拡張候補（v0.9.0 以降）
+## 今後の拡張候補（v0.11.0 以降）
 
 - objectHome 専用 Instant レイアウト
 - cache stale-while-revalidate
 - LM Studio wrapper の追加
-- report-assistant 本格化（実データ集計）
-- Service Worker 経由の Salesforce API プロキシ統一
 - Tooling API クライアント
 - 外部 Pack JSON の URL 読み込み
 - zod による API レスポンスバリデーション

@@ -10,6 +10,8 @@ SF Mothership の AI 補助ツールは、Gemini Nano / Chrome Prompt API と、
 - request size と timeout を設定する。
 - `sessionId`、`sid`、`token`、`password`、`authorization` などの secret-like key は送信前に除去する。
 - v0.9.0 の `local-ai-provider/` starter も 64KB body limit、path allowlist、secret-like key mask、最小 CORS を持つ。
+- v0.10.0 の CLI / Options smoke は固定の安全な payload のみを送り、Salesforce session や record data は含めない。
+- v0.11.0 のレポート分析 AI は read-only 集計スナップショットだけを送り、生レコードは含めない。
 
 ## 同梱 starter（v0.9.0）
 
@@ -27,6 +29,20 @@ http://127.0.0.1:3847
 
 Options 画面で Local AI Provider を有効化し、Base URL に上記を設定して `/health` 接続テストを実行する。
 
+起動済み provider の `/health` と `/v1/chat` を CLI で確認する:
+
+```bash
+npm run local-ai:smoke
+```
+
+別 URL を確認する場合:
+
+```bash
+LOCAL_AI_BASE_URL=http://127.0.0.1:3847 npm run local-ai:smoke
+```
+
+Options 画面では Local AI Provider セクションの `Smoke prompt` を実行する。これは Chrome Built-in AI / Gemini Nano の PoC smoke とは別で、localhost provider の `/v1/chat` だけを確認する。
+
 Ollama を使う場合:
 
 ```bash
@@ -41,6 +57,25 @@ OLLAMA_MODEL=llama3.2:3b OLLAMA_BASE_URL=http://127.0.0.1:11434 npm run local-ai
 ```
 
 Ollama が未起動の場合、`POST /v1/chat` は `Ollama is not reachable` を含む error を返す。
+
+Chrome Prompt / Gemini Nano が unavailable の環境でも、mock provider と `local-ai:smoke` で AI routing / UI 開発を進められる。
+
+## レポート分析 AI のデータ境界（v0.11.0）
+
+`レポート分析 (AI)` は Salesforce から以下の read-only 集計だけを取得して Local AI Provider に渡す。
+
+- `SELECT COUNT() FROM <object>` の総件数
+- `CreatedDate` がある場合の `LAST_N_DAYS` 件数
+- picklist / multipicklist / boolean 項目の上位分布（最大3項目、各5件）
+- 実行した SOQL
+- 取得できなかった集計の warning
+
+送信しないもの:
+
+- 生レコード一覧
+- sessionId / token / authorization / cookie
+- メール本文、ロングテキスト本文、暗号化項目
+- ユーザーが確認していない大量データ
 
 ## API 仕様
 

@@ -200,7 +200,7 @@ const toolDefinitions: Array<{ definition: ToolDefinition; handler: typeof quick
     definition: {
       id: 'report-analyzer',
       title: 'レポート分析 (AI)',
-      description: '分析目的に沿ったSOQL案・手順を提示（AI Provider必須）',
+      description: '集計スナップショットを根拠にSOQL案・手順を提示（AI Provider必須）',
       category: 'guide',
       pageMatch: ['recordPage', 'objectHome', 'other'],
       objectMatch: ['*'],
@@ -221,8 +221,21 @@ const toolDefinitions: Array<{ definition: ToolDefinition; handler: typeof quick
           defaultValue: '',
           helpText: '空欄の場合は現在画面のオブジェクトを使用',
         },
+        {
+          id: 'windowDays',
+          label: '集計期間',
+          type: 'select',
+          required: false,
+          defaultValue: '30',
+          helpText: 'CreatedDate がある場合に直近件数を集計します',
+          options: [
+            { label: '直近7日', value: '7' },
+            { label: '直近30日', value: '30' },
+            { label: '直近90日', value: '90' },
+          ],
+        },
       ],
-      dataSources: ['projectPackStatic'],
+      dataSources: ['describe', 'soql', 'projectPackStatic'],
       operations: [{ type: 'builtin', handler: 'reportAnalyzer' }],
       output: { type: 'guidePanel' },
       safety: {

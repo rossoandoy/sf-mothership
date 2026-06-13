@@ -56,6 +56,7 @@ npm run build        # プロダクションビルド
 npm run test         # ユニットテスト
 npm run local-ai:mock   # Local AI Provider mock 起動
 npm run local-ai:ollama # Local AI Provider Ollama 起動
+npm run local-ai:smoke  # 起動済み provider の /health + /v1/chat 確認
 npm run sync-version # package.json → manifest / version.ts 同期
 ```
 
@@ -131,13 +132,20 @@ AI補助ツール（ツール定義生成、アクセス診断説明、レポー
 v0.7.0 では AI 実行基盤を `src/ai/` に分離し、Chrome Built-in AI / Gemini Nano と Local AI Provider を共通 router で扱います。
 v0.8.0 では JSON / draft / text の出力境界、availability 説明、Local AI Provider onboarding、他Chrome拡張への移植ガイドを追加しました。
 v0.9.0 では `local-ai-provider/` に mock / Ollama 対応の Local AI Provider starter を同梱しました。
+v0.10.0 では Options と CLI から Local AI Provider の `/health` / `/v1/chat` を smoke test できます。
+v0.11.0 ではレポート分析 (AI) に read-only の集計スナップショット（COUNT / GROUP BY）を追加しました。
 
 1. Options画面で AI Provider を選択（デフォルトは Local AI Provider only）
-2. Local AI Provider を使う場合は `npm run local-ai:mock` で starter を起動し、「Local AI Provider 連携を有効化」
+2. Local AI Provider を使う場合は `npm run local-ai:mock` で starter を起動
 3. デフォルト URL: `http://127.0.0.1:3847`
-4. 接続テストで `/health` エンドポイントを確認
-5. Gemini Nano PoC は Options 画面の `availability 確認` / `Smoke prompt` で明示的に実行
-6. Ollama を使う場合は `ollama pull llama3.2:3b` 後に `npm run local-ai:ollama`
+4. `npm run local-ai:smoke` で `/health` と `/v1/chat` を確認
+5. Options で「Local AI Provider 連携を有効化」し、`接続テスト` と Local AI Provider の `Smoke prompt` を実行
+6. Gemini Nano PoC は Options 画面の `availability 確認` / Chrome Built-in AI の `Smoke prompt` で明示的に実行
+7. Ollama を使う場合は `ollama pull llama3.2:3b` 後に `npm run local-ai:ollama`
+
+`local-ai:smoke` と Options の Local AI Provider `Smoke prompt` は固定の安全な payload を使い、Salesforce の sessionId / token / record data は含めません。Chrome Prompt / Gemini Nano が unavailable でも、mock provider で AI ツール開発を進められます。
+
+レポート分析 (AI) は、対象オブジェクトの総件数、直近件数、picklist / boolean の上位分布、実行した SOQL を集計スナップショットとして AI に渡します。AI に送るのは集計値と SOQL のみで、生レコードや session 情報は送信しません。
 
 Local AI Provider は以下の API を実装してください:
 
@@ -153,7 +161,9 @@ Local AI Provider の API 仕様は [`docs/local-ai-provider.md`](docs/local-ai-
 - 全write操作にconfirmダイアログ必須
 - デフォルトはSalesforceサーバーとのみ通信
 - localhost 通信はユーザー明示オプトイン時のみ
+- Salesforce REST API は Service Worker proxy 経由で呼び出し、UI 側へ sessionId を返さない
 - sessionId 等の機密情報は Local AI Provider に送信しない
+- レポート分析 AI に渡す Salesforce データは read-only 集計値と SOQL に限定し、生レコードは送信しない
 - Local AI Provider proxy は `/health` と `/v1/chat` のみ許可
 - AI provider はオンデバイス限定 / localhost 許可の privacy 境界で routing
 - セッションIDのログ出力禁止

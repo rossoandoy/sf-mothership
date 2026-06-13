@@ -1,4 +1,5 @@
 import type { PageContext } from './context';
+import type { SalesforceApiRequestPayload } from './salesforceApi';
 
 // Content Script → Service Worker
 export interface PageContextUpdateMessage {
@@ -49,10 +50,17 @@ export type AppServerResponse<T> =
   | { ok: true; data: T }
   | { ok: false; error: string };
 
+// Salesforce API リクエスト（Side Panel → Service Worker → Salesforce）
+export interface SalesforceApiRequestMessage {
+  type: 'SALESFORCE_API_REQUEST';
+  payload: SalesforceApiRequestPayload;
+}
+
 export type ExtensionMessage =
   | PageContextUpdateMessage
   | GetPageContextMessage
   | PageContextBroadcastMessage
   | OpenSidePanelMessage
   | GetSessionMessage
-  | AppServerRequestMessage;
+  | AppServerRequestMessage
+  | SalesforceApiRequestMessage;

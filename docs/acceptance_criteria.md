@@ -143,3 +143,29 @@
 - [x] root script `local-ai:mock` / `local-ai:ollama` で起動できる
 - [x] `node --test local-ai-provider/src/*.test.mjs` が通る
 - [x] Chrome AI Kit skill に Local Provider starter 手順がある
+
+## Local AI Provider E2E UX（v0.10.0）
+- [x] Options 画面から Local AI Provider の `/v1/chat` Smoke prompt を実行できる
+- [x] Local Smoke prompt は Chrome Built-in AI / Gemini Nano の smoke と UI 上で分離されている
+- [x] Local Smoke prompt は Salesforce session / token / raw record data を含まない固定 payload を使う
+- [x] root script `local-ai:smoke` で起動済み provider の `/health` と `/v1/chat` を確認できる
+- [x] provider 未起動時、CLI smoke は non-zero exit と分かりやすい error を返す
+- [x] CLI smoke logic は node:test で success / health failure / chat failure を検証している
+- [x] README / Local AI Provider docs / Chrome AI Kit skill に smoke 手順がある
+
+## Report Analyzer Data Snapshot（v0.11.0）
+- [x] レポート分析 (AI) は unsafe object API name を Salesforce API 呼び出し前に拒否する
+- [x] 総件数 / CreatedDate 直近件数 / picklist・boolean 分布を read-only SOQL で集計できる
+- [x] distribution query は最大3項目に制限される
+- [x] 個別集計の失敗は warning として表示され、AI 実行自体は継続できる
+- [x] AI payload に渡す Salesforce データは集計スナップショットと SOQL のみに限定される
+- [x] レポート分析結果に `集計スナップショット` と `実行した SOQL` が表示される
+- [x] snapshot helper / collector / reportAnalyzer handler の unit test がある
+
+## Salesforce API Service Worker Proxy（v0.12.0）
+- [x] Side Panel の `callApi()` は `SALESFORCE_API_REQUEST` を Service Worker へ送る
+- [x] Service Worker 内で sessionId 取得と Salesforce REST API 呼び出しを完結する
+- [x] UI 側へ sessionId / apiHostname を返さずに API 結果だけを返す
+- [x] `query` / `describe` / `orgInfo` / `createRecord` / `userInfo` action を proxy できる
+- [x] 必須パラメータ不足や未知 action は Salesforce API 呼び出し前に error になる
+- [x] Local AI Provider proxy と Salesforce API proxy は別 message type / 別責務として分離されている

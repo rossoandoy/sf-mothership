@@ -3,6 +3,7 @@ import { updateTabContext, getActiveTabContext, getTabContext } from './contextM
 import { getSessionId } from '@/api/auth';
 import { isLocalhostUrl } from '@/api/appServerSettings';
 import type { ExtensionMessage, PageContextBroadcastMessage, AppServerResponse } from '@/types/messages';
+import { handleSalesforceApiRequest } from './salesforceApiProxy';
 
 // Side Panel をアクションクリックで開く
 chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });
@@ -48,11 +49,18 @@ chrome.runtime.onMessage.addListener(
       }
 
       case 'GET_SESSION': {
-        // セッション取得のみ — APIコールはSide Panelから直接行う
+        // legacy direct callers only。新規の Salesforce API 呼び出しは SALESFORCE_API_REQUEST を使う。
         getSessionId(message.payload.domain).then((result) => {
           sendResponse(result);
         });
         return true; // 非同期応答
+      }
+
+      case 'SALESFORCE_API_REQUEST': {
+        handleSalesforceApiRequest(message.payload).then((result) => {
+          sendResponse(result);
+        });
+        return true;
       }
 
       case 'APP_SERVER_REQUEST': {

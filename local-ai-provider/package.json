@@ -8,6 +8,7 @@
     "start": "node src/server.mjs",
     "start:mock": "LOCAL_AI_PROVIDER=mock node src/server.mjs",
     "start:ollama": "LOCAL_AI_PROVIDER=ollama node src/server.mjs",
+    "smoke": "node src/smoke.mjs",
     "test": "node --test src/*.test.mjs"
   }
 }

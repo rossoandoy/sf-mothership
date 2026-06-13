@@ -16,7 +16,15 @@ npm run local-ai:mock
 http://127.0.0.1:3847
 ```
 
-SF Mothership の Options で Local AI Provider を有効化し、Base URL に上記を設定して接続テストを実行してください。
+別ターミナルで CLI smoke を実行すると、`/health` と `/v1/chat` をまとめて確認できます。
+
+```bash
+npm run local-ai:smoke
+```
+
+SF Mothership の Options で Local AI Provider を有効化し、Base URL に上記を設定して `接続テスト` と `Smoke prompt` を実行してください。
+
+smoke payload は固定の安全な最小データだけを送り、Salesforce の sessionId / token / record data は含みません。
 
 ## Ollama を使う
 

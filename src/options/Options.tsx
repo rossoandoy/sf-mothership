@@ -6,6 +6,7 @@ import { getExecutionLogs } from '@/runtime/executionLogger';
 import { getAppServerSettings, setAppServerSettings } from '@/api/appServerSettings';
 import { checkAppServerHealth } from '@/api/appServerClient';
 import { checkChromePromptAvailability, runChromePromptSmokeTest } from '@/api/aiProvider';
+import { runLocalProviderSmokeTest } from '@/api/localProviderSmoke';
 import {
   DEFAULT_AI_PROVIDER_SETTINGS,
   getAiProviderSettings,
@@ -50,6 +51,8 @@ export function Options() {
   const [aiProvider, setAiProvider] = useState<AiProviderSettings>(DEFAULT_AI_PROVIDER_SETTINGS);
   const [healthStatus, setHealthStatus] = useState<string | null>(null);
   const [checkingHealth, setCheckingHealth] = useState(false);
+  const [localAiSmokeStatus, setLocalAiSmokeStatus] = useState<string | null>(null);
+  const [testingLocalAi, setTestingLocalAi] = useState(false);
   const [chromeAiStatus, setChromeAiStatus] = useState<string | null>(null);
   const [checkingChromeAi, setCheckingChromeAi] = useState(false);
   const [testingChromeAi, setTestingChromeAi] = useState(false);
@@ -93,6 +96,25 @@ export function Options() {
         : `${description.message}\n詳細: ${description.detail}`
     );
     setCheckingHealth(false);
+  };
+
+  const handleLocalAiSmokeTest = async () => {
+    setTestingLocalAi(true);
+    setLocalAiSmokeStatus(null);
+    await setAppServerSettings(appServer);
+    const result = await runLocalProviderSmokeTest();
+    setLocalAiSmokeStatus(
+      result.ok
+        ? [
+          `smoke OK: ${result.data.content}`,
+          result.data.model ? `model: ${result.data.model}` : '',
+        ].filter(Boolean).join('\n')
+        : [
+          'smoke NG: Local AI Provider の /v1/chat を確認できませんでした。',
+          `詳細: ${result.error}`,
+        ].join('\n')
+    );
+    setTestingLocalAi(false);
   };
 
   const handleChromeAiAvailability = async () => {
@@ -281,10 +303,22 @@ export function Options() {
           >
             {checkingHealth ? '確認中...' : '接続テスト'}
           </button>
+          <button
+            onClick={handleLocalAiSmokeTest}
+            disabled={testingLocalAi || !appServer.enabled}
+            className="bg-gray-100 text-gray-700 px-4 py-2 rounded text-sm hover:bg-gray-200 transition-colors disabled:opacity-50"
+          >
+            {testingLocalAi ? '実行中...' : 'Smoke prompt'}
+          </button>
         </div>
         {healthStatus && (
           <p className={`text-xs mt-3 whitespace-pre-line ${healthStatus.startsWith('接続OK') ? 'text-green-600' : 'text-red-600'}`}>
             {healthStatus}
+          </p>
+        )}
+        {localAiSmokeStatus && (
+          <p className={`text-xs mt-3 whitespace-pre-line ${localAiSmokeStatus.startsWith('smoke OK') ? 'text-green-600' : 'text-red-600'}`}>
+            {localAiSmokeStatus}
           </p>
         )}
       </section>
